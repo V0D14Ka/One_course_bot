@@ -1,0 +1,1 @@
+from handlers.register_commands import register_commands_handlers
