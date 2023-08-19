@@ -2,11 +2,11 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
 
-class InlineMenu:
+class ScheduleMenu:
     """
         Класс отображения клавиатур
     """
-    menu_cd = CallbackData("show_menu", "level", "category")
+    menu_cd = CallbackData("schedule_menu", "level", "category")
 
     def make_callback_data(self, level, category=0):
         """
@@ -23,45 +23,43 @@ class InlineMenu:
         markup = InlineKeyboardMarkup()
 
         markup.row(
-            InlineKeyboardButton(text="Список разделов курса", callback_data=self.make_callback_data(
+            InlineKeyboardButton(text="Расписание лекций", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 category=1))
         )
 
         markup.row(
-            InlineKeyboardButton(text="Список контрольных точек", callback_data=self.make_callback_data(
+            InlineKeyboardButton(text="Расписание семенаров", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 category=2))
         )
 
         markup.row(
-            InlineKeyboardButton(text="О курсе", callback_data=self.make_callback_data(
+            InlineKeyboardButton(text="Расписание КТ", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 category=3))
         )
 
         markup.row(
-            InlineKeyboardButton(text="Расписание", callback_data=self.make_callback_data(
+            InlineKeyboardButton(text="На ближайшую неделю", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 category=4))
         )
 
         markup.row(
-            InlineKeyboardButton(text="Задание дня", callback_data=self.make_callback_data(
+            InlineKeyboardButton(text="На ближайший месяц", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 category=5))
         )
 
-        markup.row(
-            InlineKeyboardButton(text="База знаний", callback_data=self.make_callback_data(
-                level=current_level + 1,
-                category=6))
-        )
+        return markup
+
+    async def back_keyboard(self):
+        current_level = 1
+        markup = InlineKeyboardMarkup()
 
         markup.row(
-            InlineKeyboardButton(text="О себе", callback_data=self.make_callback_data(
-                level=current_level + 1,
-                category=7))
+            InlineKeyboardButton(text="Назад", callback_data=self.make_callback_data(level=current_level-1))
         )
 
         return markup

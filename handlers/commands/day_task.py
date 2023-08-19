@@ -18,3 +18,7 @@ async def day_task(message: Union[types.CallbackQuery, types.Message]):
 
     if isinstance(message, types.Message):
         await message.answer("Выбрано day_task")
+
+
+def register_day_task_handlers(_dp: Dispatcher):
+    _dp.register_message_handler(day_task, commands=['day_task'])
