@@ -4,15 +4,21 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized, \
     MessageNotModified
+
+from DB.models import Users
 from create_bot import bot, inline_menu
 from handlers.commands import *
 from static import messages
+from utils import check_access
 
 
 async def list_categories(message: Union[types.CallbackQuery, types.Message], **kwargs):
     """
        Корректная выдача меню
     """
+    if await check_access(message) is False:
+        return
+
     markup = await inline_menu.menu_keyboard()
 
     if isinstance(message, types.CallbackQuery):

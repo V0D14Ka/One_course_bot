@@ -3,6 +3,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized
 from aiogram.dispatcher import FSMContext
 
+from DB.models import Users
 from create_bot import bot
 from static import messages
 
@@ -11,6 +12,9 @@ async def commands_start(message: types.Message):
     """
         Обработка команд start/help
     """
+    if not await Users.exists(id=message.from_user.id):
+        await Users.create(id=message.from_user.id)
+
     try:
         msg = messages.welcome_mesg if message.get_command() == '/start' else messages.help_mesg
         await bot.send_message(message.from_user.id, msg)

@@ -6,8 +6,10 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
+from DB.models import Users
 from create_bot import bot, schedule_menu
 from static import messages
+from utils import check_access
 
 
 async def schedule(message: Union[types.CallbackQuery, types.Message]):
@@ -22,6 +24,8 @@ async def schedule(message: Union[types.CallbackQuery, types.Message]):
             pass
 
     if isinstance(message, types.Message):
+        if await check_access(message) is False:
+            return
         await message.answer("Выберите пункт", reply_markup=markup)
 
 
