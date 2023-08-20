@@ -5,3 +5,4 @@ from .personal import personal, register_personal_handlers
 from .schedule import schedule, register_schedule_handlers
 from .topics import topics, register_topics_handlers
 from .info import info, register_info_handlers
+from .faq import faq, register_faq_handlers
