@@ -64,4 +64,10 @@ class InlineMenu:
                 category=7))
         )
 
+        markup.row(
+            InlineKeyboardButton(text="Часто задаваемые вопросы", callback_data=self.make_callback_data(
+                level=current_level + 1,
+                category=8))
+        )
+
         return markup

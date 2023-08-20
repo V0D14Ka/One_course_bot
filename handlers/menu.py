@@ -45,7 +45,8 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                           "4": schedule,
                           "5": day_task,
                           "6": knowledge,
-                          "7": personal}
+                          "7": personal,
+                          "8": faq}
 
             await categories[category](call)
 
