@@ -3,8 +3,10 @@ from aiogram import Bot
 from aiogram.dispatcher import Dispatcher
 from dotenv import load_dotenv
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from utils import Validation
 
-from keyboards import InlineMenu, ScheduleMenu, KnowledgeMenu, CheckpointsMenu, TopicsMenu, DayTaskMenu, FAQMenu
+from keyboards import (InlineMenu, ScheduleMenu, KnowledgeMenu, CheckpointsMenu, TopicsMenu, DayTaskMenu, FAQMenu,
+                       PersonalMenu)
 
 load_dotenv()
 
@@ -15,6 +17,9 @@ checkpoints_menu = CheckpointsMenu()
 topics_menu = TopicsMenu()
 day_task_menu = DayTaskMenu()
 faq_menu = FAQMenu()
+personal_menu = PersonalMenu()
+
+validation = Validation()
 
 storage = MemoryStorage()
 
