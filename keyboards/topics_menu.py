@@ -1,3 +1,5 @@
+import json
+
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
@@ -6,13 +8,29 @@ class TopicsMenu:
     """
         Класс отображения клавиатур topics
     """
-    menu_cd = CallbackData("topics_menu", "level", "chapter", "item_id", "theme", "category")
+    menu_cd = CallbackData("topics_menu", "level", "chapter", "item_id", "theme", "category", "choose")
 
-    def make_callback_data(self, level, chapter=0, item_id=0, theme=0, category=0):
+    def make_callback_data(self, level, chapter=0, item_id=0, theme=0, category=0, choose=-1):
         """
             Создание callback меню topics
         """
-        return self.menu_cd.new(level=level, chapter=chapter, item_id=item_id, theme=theme, category=category)
+        return self.menu_cd.new(level=level, chapter=chapter, item_id=item_id, theme=theme, category=category, choose=choose)
+
+    async def menu_cp_keyboard(self, points):
+        """
+            Клавиатура уровень 0
+        """
+        markup = InlineKeyboardMarkup()
+
+        for point in points:
+            button_text = f"{point[1]}"
+            markup.row(
+                InlineKeyboardButton(text=button_text, callback_data=self.make_callback_data(level=2,
+                                                                                      chapter=point[0],
+                                                                                      category=2))
+            )
+
+        return markup
 
     async def menu_keyboard(self, chapters):
         """
@@ -104,34 +122,34 @@ class TopicsMenu:
         markup.row(
             InlineKeyboardButton(text="Раздатка", callback_data=self.make_callback_data(level=current_level + 1,
                                                                                         chapter=chapter, theme=theme,
-                                                                                        category=1))
+                                                                                        category=1, choose=4))
         )
 
         markup.row(
             InlineKeyboardButton(text="ДЗ", callback_data=self.make_callback_data(level=current_level + 1,
                                                                                   chapter=chapter, theme=theme,
-                                                                                  category=1))
+                                                                                  category=1, choose=0))
         )
 
         markup.row(
             InlineKeyboardButton(text="Опрос", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 chapter=chapter, theme=theme,
-                category=1))
+                category=1, choose=3))
         )
 
         markup.row(
             InlineKeyboardButton(text="Ссылки", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 chapter=chapter, theme=theme,
-                category=1))
+                category=1, choose=1))
         )
 
         markup.row(
             InlineKeyboardButton(text="Расписание", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 chapter=chapter, theme=theme,
-                category=1))
+                category=1, choose=2))
         )
 
         markup.row(
