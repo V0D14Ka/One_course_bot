@@ -112,8 +112,9 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
             elif category == "2":
                 markup = await topics_menu.checkpoint_info(chapter)
+                info = await google_api.get_checkpoint(chapters[f"{chapter}"])
                 try:
-                    await call.message.edit_text(messages.example_cp)
+                    await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
                     await call.message.edit_reply_markup(markup)
                 except MessageNotModified:
                     pass

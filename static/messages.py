@@ -31,11 +31,11 @@ ask_for_update_user_info = '''
 '''
 
 example_cp = '''
-1. Название раздела и темы, к которым относится КТ
-2. нумерованный список кейсов для контрольной точки.
-3. Дата и время проведения контрольной точки
-4. Номер аудитории 
-5. Комментарий от преподавателя'''
+1. Название тем: %s.
+2. Список кейсов: %s.
+3. Дата и время проведения контрольной точки: %s.
+4. Аудитория %s.
+5. Комментарий от преподавателя: %s'''
 
 user_info = '''
 Ваши личные данные:
@@ -57,3 +57,20 @@ async def make_user_info(item: Users, updated=False):
         return "Изменение прошло успешно:\n" + answer
     else:
         return answer
+
+
+async def make_method_info(info):
+    input_string = info[1]
+    books_list = input_string.split(';')
+    formatted_string = '\n'.join([f'{index + 1}. {book},' for index, book in enumerate(books_list)])
+    formatted_string = formatted_string[:-1]
+
+    return f"{info[0]}:\n" + formatted_string
+
+
+async def format_array_to_string(data):
+    result = ""
+    for index, item in enumerate(data, start=1):
+        question, answer = item[0].split('-')
+        result += f"{index}.'{question}'-{answer}\n"
+    return result

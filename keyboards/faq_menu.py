@@ -23,8 +23,7 @@ class FAQMenu:
         markup = InlineKeyboardMarkup()
 
         markup.row(
-            InlineKeyboardButton(text="Написать преподавателю", callback_data=self.make_callback_data(
-                level=current_level + 1))
+            InlineKeyboardButton(text="Написать преподавателю", url="tg://openmessage?user_id=830311856")
         )
 
         return markup
