@@ -29,7 +29,7 @@ class ScheduleMenu:
         )
 
         markup.row(
-            InlineKeyboardButton(text="Расписание семенаров", callback_data=self.make_callback_data(
+            InlineKeyboardButton(text="Расписание семинаров", callback_data=self.make_callback_data(
                 level=current_level + 1,
                 category=2))
         )
