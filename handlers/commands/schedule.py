@@ -1,3 +1,4 @@
+import datetime
 from typing import Union
 
 from aiogram import types, Dispatcher
@@ -5,8 +6,9 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
-from create_bot import schedule_menu
+from create_bot import schedule_menu, google_api
 from utils import check_access
+from utils.calendar import make_lessons_info, make_period_info
 
 
 async def schedule(message: Union[types.CallbackQuery, types.Message]):
@@ -42,15 +44,22 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
         case "1":
             # Заглушка
-            categories = {"1": "Расписание лекций",
-                          "2": "Расписание семенаров",
-                          "3": "Расписание КТ",
-                          "4": "На ближайшую неделю",
-                          "5": "На ближайший месяц"}
+            categories = {"1": "Лекция",
+                          "2": "Семинар",
+                          "3": "КТ",
+                          "4": "week",
+                          "5": "month"}
 
+            if category in "123":
+                lessons = await google_api.get_lessons_dates(categories[category])
+                answer = await make_lessons_info(lessons)
+            else:
+                lessons = await google_api.get_period_lessons(categories[category])
+                answer = await make_period_info(lessons, categories[category])
             markup = await schedule_menu.back_keyboard()
+
             try:
-                await call.message.edit_text(categories[category])
+                await call.message.edit_text(answer)
                 await call.message.edit_reply_markup(markup)
             except MessageNotModified:
                 pass

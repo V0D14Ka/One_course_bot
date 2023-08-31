@@ -1,10 +1,14 @@
 import os
-import datetime as dt
+import datetime
+from datetime import timedelta
 import asyncio
 import json
+import pprint
+
 from dotenv import load_dotenv
 from aiogoogle import Aiogoogle
 from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaFileUpload
 
 load_dotenv()
 
@@ -23,6 +27,7 @@ class GoogleAPI:
     KNOWLEDGE_SPREADSHEET_ID = os.getenv("KNOWLEDGE_SPREADSHEET_ID")
     DAY_TASK_SPREADSHEET_ID = os.getenv("DAY_TASK_SPREADSHEET_ID")
     FAQ_SPREADSHEET_ID = os.getenv("FAQ_SPREADSHEET_ID")
+    CALENDAR_ID = os.getenv("CALENDAR_ID")
 
     async def init(self):
         creds_data = load_creds_from_file(self.SERVICE_ACCOUNT_FILE)
@@ -92,23 +97,68 @@ class GoogleAPI:
             print("get_FAQ- ", values)
             return values
 
-    async def test_calendar(self):
-        now = dt.datetime.utcnow().isoformat() + 'Z'
+    async def get_lessons_dates(self, summary):
+        now = datetime.datetime.utcnow().isoformat() + 'Z'
         try:
             async with self.aiogoogle as g:
                 res = await g.as_service_account(
-                    self._service_calendar.events.list(calendarId='primary', timeMin=now, maxResults=10, singleEvents=True,
-                                        orderBy='startTime')
+                    self._service_calendar.events.list(calendarId=self.CALENDAR_ID, timeMin=now,
+                                                       maxResults=5, singleEvents=True,
+                                                       orderBy='startTime', q=summary)
                 )
-                events = res.get('values', [])
+                events = res.get('items', [])
                 if not events:
                     print('No upcoming events found.')
-                    return
+                    return []
 
+                answer = []
                 for event in events:
                     start = event['start'].get('dateTime', event['start'].get('date'))
-                    print(start, event['summary'])
+                    try:
+                        loc = event['location']
+                    except:
+                        loc = "Место неизвестно"
+                    answer.append([start, loc])
+
+                return answer
 
         except HttpError as error:
             print('An error occurred: %s' % error)
 
+    async def get_period_lessons(self, period):
+        now = datetime.datetime.utcnow().isoformat() + 'Z'
+        current_date = datetime.datetime.utcnow()
+
+        if period == "week":
+            maxtime = (current_date + timedelta(weeks=1)).isoformat() + 'Z'
+        elif period == "month":
+            maxtime = (current_date + timedelta(days=30)).isoformat() + 'Z'
+        try:
+            async with self.aiogoogle as g:
+                res = await g.as_service_account(
+                    self._service_calendar.events.list(
+                        calendarId=self.CALENDAR_ID,
+                        timeMin=now,
+                        timeMax=maxtime,
+                        singleEvents=True,
+                        orderBy='startTime')
+                )
+                events = res.get('items', [])
+
+                if not events:
+                    print('No upcoming events found.')
+                    return []
+
+                answer = []
+                for event in events:
+                    start = event['start'].get('dateTime', event['start'].get('date'))
+                    try:
+                        loc = event['location']
+                    except:
+                        loc = "Место неизвестно"
+                    answer.append([start, loc, event['summary']])
+
+                return answer
+
+        except Exception as e:
+            print('An error occurred: %s' % e)
