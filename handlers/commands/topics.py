@@ -7,9 +7,10 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
+from DB.models import Users
 from create_bot import topics_menu, google_api
 from static import messages
-from static.dictionaries import chapters
+from static.dictionaries import chapters, chapters_arr
 from utils import check_access, check_cancel_update
 
 
@@ -18,8 +19,7 @@ class FSMSetDoc(StatesGroup):
 
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
-    arr = [["1", "Раздел1"], ["2", "Раздел2"], ["3", "Раздел3"]]
-    markup = await topics_menu.menu_keyboard(arr)
+    markup = await topics_menu.menu_keyboard(chapters_arr)
     if isinstance(message, types.CallbackQuery):
         call = message
         await call.message.edit_text("Выберите раздел курса")
@@ -40,7 +40,8 @@ async def doc_set(message: types.Message, state: FSMContext, **kwargs):
 
         if message.document.mime_type in ['application/pdf']:
             # Сохраняем файл
-            file_path = os.path.join('saved_files', "hello.pdf")
+            user = await Users.get(id=message.from_user.id)
+            file_path = os.path.join('saved_files', f"{user.full_name}.pdf")
             await message.document.download(destination=file_path)
             await call.message.edit_text("Файл успешно сохранен!")
         else:
