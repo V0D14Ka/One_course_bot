@@ -1,19 +1,24 @@
+import io
 import os
 from typing import Union
 
+import requests
 from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized, \
     MessageNotModified
 from aiogram.dispatcher import FSMContext
+from dotenv import load_dotenv
+from googleapiclient.http import MediaIoBaseUpload
 
 from DB.models import Users
-from create_bot import topics_menu, google_api
+from create_bot import topics_menu, google_api, bot
+from services.google_api import upload_file
 from static import messages
 from static.dictionaries import chapters, chapters_arr
 from utils import check_access, check_cancel_update
 
-
+load_dotenv()
 class FSMSetDoc(StatesGroup):
     new_value = State()
 
@@ -39,13 +44,21 @@ async def doc_set(message: types.Message, state: FSMContext, **kwargs):
         chapter = data["chapter"]
 
         if message.document.mime_type in ['application/pdf']:
-            # Сохраняем файл
-            user = await Users.get(id=message.from_user.id)
-            file_path = os.path.join('saved_files', f"{user.full_name}.pdf")
-            await message.document.download(destination=file_path)
-            await call.message.edit_text("Файл успешно сохранен!")
+            if message.document.file_size < 83886080:
+                # Сохраняем файл
+                await call.message.edit_text("Пожалуйста подождите загрузки файла🕒")
+                user = await Users.get(id=message.from_user.id)
+                username = user.study_group + '. ' + user.full_name
+                file_info = await bot.get_file(message.document.file_id)
+
+                BOT_TOKEN = os.getenv("TOKEN")
+                file_url = f'https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}'
+                response = requests.get(file_url, stream=True)
+
+                await google_api.upload(io.BytesIO(response.content).getvalue(), username)
+                await call.message.edit_text("Файл успешно сохранен!✅")
         else:
-            await call.message.edit_text("Неверный формат файла. Пожалуйста, отправьте PDF файл.")
+            await call.message.edit_text("Неверный формат файла❌. Пожалуйста, отправьте файл в формате PDF.")
             await message.delete()
             return
 
@@ -72,7 +85,11 @@ async def doc_set_text(message: types.Message, state: FSMContext, **kwargs):
             await state.finish()
             return
 
-        await call.message.edit_text("Отправьте документ в формате pdf или напишите 'отмена'")
+        try:
+            await call.message.edit_text("Отправьте документ в формате pdf или напишите 'отмена'")
+        except MessageNotModified:
+            pass
+
         await message.delete()
 
 
@@ -87,6 +104,8 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
     chapter = callback_data.get('chapter')
     theme = callback_data.get('theme')
     choose = callback_data.get('choose')
+
+    # await google_api.upload()
 
     # Смотрим какой уровень был вызван
     match current_level:
