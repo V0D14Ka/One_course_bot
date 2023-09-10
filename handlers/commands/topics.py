@@ -13,7 +13,6 @@ from googleapiclient.http import MediaIoBaseUpload
 
 from DB.models import Users
 from create_bot import topics_menu, google_api, bot
-from services.google_api import upload_file
 from static import messages
 from static.dictionaries import chapters, chapters_arr
 from utils import check_access, check_cancel_update
@@ -105,7 +104,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
     theme = callback_data.get('theme')
     choose = callback_data.get('choose')
 
-    # await google_api.upload()
+    # await google_api.check_user("Б9121", "Иванов Иван Иванов")
 
     # Смотрим какой уровень был вызван
     match current_level:
