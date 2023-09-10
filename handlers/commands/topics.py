@@ -54,7 +54,8 @@ async def doc_set(message: types.Message, state: FSMContext, **kwargs):
                 file_url = f'https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}'
                 response = requests.get(file_url, stream=True)
 
-                await google_api.upload(io.BytesIO(response.content).getvalue(), username)
+                folder_id = "1KU8WOgqxc9LmVonxF2IEdT9bkYyQBqce"
+                await google_api.upload(io.BytesIO(response.content).getvalue(), username, folder_id)
                 await call.message.edit_text("Файл успешно сохранен!✅")
         else:
             await call.message.edit_text("Неверный формат файла❌. Пожалуйста, отправьте файл в формате PDF.")
