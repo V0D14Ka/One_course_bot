@@ -56,3 +56,16 @@ async def check_cancel_update(call: types.CallbackQuery, message: types.Message,
     except MessageCantBeDeleted:
         pass
     return True
+
+
+async def capitalize_name(full_name):
+    # Разбиваем строку на слова по пробелам
+    words = full_name.split()
+
+    # Создаем список, в котором каждое слово начинается с заглавной буквы
+    capitalized_words = [word.capitalize() for word in words]
+
+    # Объединяем слова в одну строку, разделяя их пробелами
+    capitalized_name = ' '.join(capitalized_words)
+
+    return capitalized_name

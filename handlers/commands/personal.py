@@ -10,7 +10,7 @@ from tortoise.exceptions import NoValuesFetched
 from DB.models import Users
 from create_bot import bot, personal_menu, validation, google_api
 from static import messages
-from utils import check_access
+from utils import check_access, capitalize_name
 from utils import check_blank_user_info, check_validate, check_cancel_update
 
 
@@ -120,7 +120,6 @@ async def fullname_set(message: types.Message, state: FSMContext, **kwargs):
                     return
 
             case 200:
-                print(message.from_user.id, tg, group)
                 await google_api.set_id(message.from_user.id, tg, group)
             case 404:
                 await personal(call, error="Студент с данным именем, в данной группе не найден. Проверьте данные и повторите попытку")
@@ -142,7 +141,7 @@ async def fullname_set(message: types.Message, state: FSMContext, **kwargs):
         # Сохраняем пользователя
         try:
             user = await Users.get(id=message.from_user.id)
-            user.full_name = full_name
+            user.full_name = await capitalize_name(full_name)
             user.study_group = group
             user.form = form
             await user.save()
