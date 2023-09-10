@@ -24,6 +24,7 @@ class FSMSetDoc(StatesGroup):
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
     markup = await topics_menu.menu_keyboard(chapters_arr)
+
     if isinstance(message, types.CallbackQuery):
         call = message
         await call.message.edit_text("Выберите раздел курса")
