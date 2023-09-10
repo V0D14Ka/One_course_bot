@@ -8,13 +8,13 @@ class TopicsMenu:
     """
         Класс отображения клавиатур topics
     """
-    menu_cd = CallbackData("topics_menu", "level", "chapter", "item_id", "theme", "category", "choose")
+    menu_cd = CallbackData("topics_menu", "level", "chapter", "item_id", "theme", "category", "choose", "upload")
 
-    def make_callback_data(self, level, chapter=0, item_id=0, theme=0, category=0, choose=-1):
+    def make_callback_data(self, level, chapter=0, item_id=0, theme=0, category=0, choose=-1, upload=0):
         """
             Создание callback меню topics
         """
-        return self.menu_cd.new(level=level, chapter=chapter, item_id=item_id, theme=theme, category=category, choose=choose)
+        return self.menu_cd.new(level=level, chapter=chapter, item_id=item_id, theme=theme, category=category, choose=choose, upload=upload)
 
     async def menu_cp_keyboard(self, points):
         """
@@ -105,7 +105,7 @@ class TopicsMenu:
         markup.row(
             InlineKeyboardButton(text="Отправить на проверку", callback_data=self.make_callback_data(
                 level=current_level + 1,
-                chapter=chapter, category=2))
+                chapter=chapter, category=2, upload=1))
         )
 
         markup.row(

@@ -23,7 +23,7 @@ def load_creds_from_file(file_path):
 
 class GoogleAPI:
     SERVICE_ACCOUNT_FILE = 'onecourseproject.json'
-    SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive',
+    SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive',
               'https://www.googleapis.com/auth/calendar']
     TOPICS_SPREADSHEET_ID = os.getenv("SAMPLE_SPREADSHEET_ID")
     KNOWLEDGE_SPREADSHEET_ID = os.getenv("KNOWLEDGE_SPREADSHEET_ID")
@@ -192,17 +192,32 @@ class GoogleAPI:
 
             values = res.get('values', [])
 
-            count = 0
+            count = 1
             for row in values:
                 count += 1
-                if full_name == row[0]:
+                if full_name.lower() == (row[0]).lower():
                     try:
                         if row[1] is not None:
                             print("check_user - User is logged")
                             return 400, row[1]
                     except:
                         print(f"check_user - C{count}")
-                        return 200, 0
+                        return 200, count
 
             print("check_user - student is not exist ")
             return 404, 0
+
+    async def set_id(self, tg_id, col, group):
+        value_range_body = {
+            'values': [[tg_id]]
+        }
+        async with self.aiogoogle as g:
+            res = await g.as_service_account(
+                self._spreadsheet.values.update(spreadsheetId=self.GROUP_SPREADSHEET_ID,
+                                                range=f"{group}!C{col}", json=value_range_body,
+                                                valueInputOption='USER_ENTERED')
+            )
+            print(f"set-id : col - {col}, tg_id - {tg_id}, group - {group}")
+
+            return
+
