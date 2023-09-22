@@ -22,6 +22,10 @@ class FSMDeleteTeam(StatesGroup):
     sure = State()
 
 
+class FSMLeaveTeam(StatesGroup):
+    sure = State()
+
+
 async def teams(message: Union[types.CallbackQuery, types.Message]):
     # markup = await teams_menu.menu_keyboard()
     if isinstance(message, types.CallbackQuery):
@@ -130,6 +134,29 @@ async def team_delete(message: types.Message, state: FSMContext, **kwargs):
         await teams(call)
 
 
+async def team_leave(message: types.Message, state: FSMContext, **kwargs):
+    async with state.proxy() as data:
+        # Забираем необходимую информацию
+        call = data["call"]
+        team_id = data["team_id"]
+
+        if message.text.lower() == "да":
+            team = await Teams.get(id=team_id)
+            user = await Users.get(id=call.from_user.id)
+            user.team = None
+            team.count -= 1
+            await user.save()
+            await team.save()
+
+        try:
+            await message.delete()
+        except:
+            pass
+
+        await state.finish()
+        await teams(call)
+
+
 async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_data: dict):
     """
         Навигация по меню teams
@@ -186,6 +213,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
                 else:
                     team = await Teams.get(id=team_id)
+
                     if call.from_user.id == int(team.admin):
                         await call.message.edit_text(
                             "Вы являетесь капитаном данной команды, если вы ее покините, команда будет удалена, "
@@ -195,6 +223,17 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                             data['team_id'] = team_id
                             data["call"] = call
                             await FSMDeleteTeam.sure.set()
+                            return
+
+                    await call.message.edit_text(
+                        "Вы действительно хотите покинуть команду? Напишите 'Да' для подтверждения"
+                        ", любой другой текст будет воспринят как отмена.")
+                    async with state.proxy() as data:
+                        # Передаем необходимую информацию
+                        data['team_id'] = team_id
+                        data["call"] = call
+                        await FSMLeaveTeam.sure.set()
+                        return
 
 
 def register_teams_handlers(_dp: Dispatcher):
@@ -202,3 +241,4 @@ def register_teams_handlers(_dp: Dispatcher):
     _dp.register_callback_query_handler(menu_navigate, teams_menu.menu_cd.filter(), state=None)
     _dp.register_message_handler(find_team, state=FSMfindTeam.team_pass)
     _dp.register_message_handler(team_delete, state=FSMDeleteTeam.sure)
+    _dp.register_message_handler(team_leave, state=FSMLeaveTeam.sure)
