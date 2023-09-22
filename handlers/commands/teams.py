@@ -18,6 +18,10 @@ class FSMfindTeam(StatesGroup):
     team_pass = State()
 
 
+class FSMDeleteTeam(StatesGroup):
+    sure = State()
+
+
 async def teams(message: Union[types.CallbackQuery, types.Message]):
     # markup = await teams_menu.menu_keyboard()
     if isinstance(message, types.CallbackQuery):
@@ -71,8 +75,6 @@ async def find_team(message: types.Message, state: FSMContext, **kwargs):
         category = data["category"]
         call = data["call"]
         new_value = message.text
-        # И кладем новую
-        data["form"] = new_value
 
         # Обработка отмены
         if message.text.lower() == 'отмена':
@@ -105,6 +107,25 @@ async def find_team(message: types.Message, state: FSMContext, **kwargs):
         await user.save()
 
         await message.delete()
+        await state.finish()
+        await teams(call)
+
+
+async def team_delete(message: types.Message, state: FSMContext, **kwargs):
+    async with state.proxy() as data:
+        # Забираем необходимую информацию
+        call = data["call"]
+        team_id = data["team_id"]
+
+        if message.text.lower() == "да":
+            team = await Teams.get(id=team_id)
+            await team.delete()
+
+        try:
+            await message.delete()
+        except:
+            pass
+
         await state.finish()
         await teams(call)
 
@@ -164,11 +185,20 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     await call.message.edit_reply_markup(markup)
 
                 else:
-                    # Покидаем группу
-                    pass
+                    team = await Teams.get(id=team_id)
+                    if call.from_user.id == int(team.admin):
+                        await call.message.edit_text(
+                            "Вы являетесь капитаном данной команды, если вы ее покините, команда будет удалена, "
+                            "вы уверены? Напишите 'Да' для удаления, любой другой текст будет воспринят как отмена.")
+                        async with state.proxy() as data:
+                            # Передаем необходимую информацию
+                            data['team_id'] = team_id
+                            data["call"] = call
+                            await FSMDeleteTeam.sure.set()
 
 
 def register_teams_handlers(_dp: Dispatcher):
     _dp.register_message_handler(teams, commands=['teams'])
     _dp.register_callback_query_handler(menu_navigate, teams_menu.menu_cd.filter(), state=None)
     _dp.register_message_handler(find_team, state=FSMfindTeam.team_pass)
+    _dp.register_message_handler(team_delete, state=FSMDeleteTeam.sure)
