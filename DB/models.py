@@ -8,6 +8,7 @@ class Users(Model):
     full_name = fields.CharField(60, null=True)
     form = fields.IntField(null=True)
     study_group = fields.CharField(100, null=True)
+    team = fields.OneToOneRelation("models.Teams", related_name='teams', null=True)
 
     def __getitem__(self, item):
         match item:
@@ -30,3 +31,8 @@ class Users(Model):
                 self.form = new_value
             case 3:
                 self.study_group = new_value
+
+
+class Teams(Model):
+    id = fields.IntField(pk=True)
+    admin = fields.CharField(max_length=12, null=True)

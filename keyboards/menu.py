@@ -70,4 +70,11 @@ class InlineMenu:
                 category=8))
         )
 
+        markup.row(
+            InlineKeyboardButton(text="Команды", callback_data=self.make_callback_data(
+                level=current_level+1,
+                category=9
+            ))
+        )
+
         return markup
