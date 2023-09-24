@@ -107,7 +107,6 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
     choose = callback_data.get('choose')
     upload = callback_data.get('upload')
 
-    await google_api.get_team_colsss("1231")
 
     # Смотрим какой уровень был вызван
     match current_level:
