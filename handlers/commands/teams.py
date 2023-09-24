@@ -193,6 +193,7 @@ async def team_leave(message: types.Message, state: FSMContext, **kwargs):
         team_id = data["team_id"]
 
         if message.text.lower() == "да":
+
             team = await Teams.get(id=team_id)
             user = await Users.get(id=call.from_user.id)
 
@@ -268,7 +269,12 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     await call.message.edit_reply_markup(markup)
 
                 else:
-                    team = await Teams.get(id=team_id)
+
+                    try:
+                        team = await Teams.get(id=team_id)
+                    except:
+                        await call.message.edit_text("Произошла ошибка, возможно вы пытались использовать старое меню.")
+                        return
 
                     if call.from_user.id == int(team.admin):
                         await call.message.edit_text(
