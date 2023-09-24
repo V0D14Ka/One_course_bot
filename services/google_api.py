@@ -206,6 +206,100 @@ class GoogleAPI:
             print("check_user - student is not exist ")
             return 404, 0
 
+    async def check_user_team(self, group, full_name):
+        async with self.aiogoogle as g:
+            try:
+                res = await g.as_service_account(
+                    self._spreadsheet.values.get(spreadsheetId=self.GROUP_SPREADSHEET_ID,
+                                                 range=f"{group}!B2:D")
+                )
+            except:
+                return 500, 0
+
+            values = res.get('values', [])
+
+            count = 1
+            for row in values:
+                count += 1
+                if full_name.lower() == (row[0]).lower():
+                    try:
+                        if row[2] is not None:
+                            print("check_user_team - User is already in team")
+                            return 400, row[2]
+                    except:
+                        print(f"check_user - D{count}")
+                        return 200, count
+
+            print("check_user_team - student is not exist ")
+            return 404, 0
+
+    async def get_team_col(self, group, full_name):
+        async with self.aiogoogle as g:
+            try:
+                res = await g.as_service_account(
+                    self._spreadsheet.values.get(spreadsheetId=self.GROUP_SPREADSHEET_ID,
+                                                 range=f"{group}!B2:D")
+                )
+            except:
+                return 500, 0
+            values = res.get('values', [])
+            count = 1
+            for row in values:
+                count += 1
+                if full_name.lower() == (row[0]).lower():
+                    print(f"get_team_col - student {full_name} - D{count}")
+                    return 200, count
+
+            print("get_team_col - student is not exist ")
+            return 404, 0
+
+    async def delete_team(self, team):
+        async with self.aiogoogle as g:
+            # try:
+            # Получить список всех листов в таблице
+            spreadsheet_info = await g.as_service_account(
+                self._spreadsheet.get(spreadsheetId=self.GROUP_SPREADSHEET_ID)
+            )
+            sheets = spreadsheet_info.get('sheets', [])
+            titles = [item['properties']['title'] for item in sheets]
+
+            # Пройти по всем листам и выполнить запрос для каждого
+            for sheet in titles:
+                result = []
+                value_range_body = {
+                    'values': [[""]]
+                }
+
+                res = await g.as_service_account(
+                    self._spreadsheet.values.get(spreadsheetId=self.GROUP_SPREADSHEET_ID,
+                                                 range=f"{sheet}!B2:D")
+                )
+
+                values = res.get('values', [])
+                count = 1
+
+                for row in values:
+                    count += 1
+                    try:
+                        if team == row[2]:
+                            result.append(count)
+                    except:
+                        pass
+
+                for i in result:
+                    await g.as_service_account(
+                        self._spreadsheet.values.update(spreadsheetId=self.GROUP_SPREADSHEET_ID,
+                                                        range=f"{sheet}!D{i}", json=value_range_body,
+                                                        valueInputOption='USER_ENTERED')
+                    )
+                    print(f"delete-team {team} : col - {i}, group - {sheet}")
+
+            return result
+
+        # except Exception as e:
+        #     print(f"An error occurred: {e}")
+        #     return 500, 1
+
     async def set_id(self, tg_id, col, group):
         value_range_body = {
             'values': [[tg_id]]
@@ -220,3 +314,16 @@ class GoogleAPI:
 
             return
 
+    async def set_team(self, admin, col, group):
+        value_range_body = {
+            'values': [[admin]]
+        }
+        async with self.aiogoogle as g:
+            res = await g.as_service_account(
+                self._spreadsheet.values.update(spreadsheetId=self.GROUP_SPREADSHEET_ID,
+                                                range=f"{group}!D{col}", json=value_range_body,
+                                                valueInputOption='USER_ENTERED')
+            )
+            print(f"set-team : col - {col}, team_id - {admin}, group - {group}")
+
+            return
