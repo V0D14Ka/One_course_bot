@@ -42,6 +42,7 @@ class GoogleAPI:
         self.aiogoogle = aiogoogle
 
     async def get_themes(self, chapter):
+        print(chapter)
         async with self.aiogoogle as g:
             res = await g.as_service_account(
                 self._spreadsheet.values.get(spreadsheetId=self.TOPICS_SPREADSHEET_ID,
@@ -59,8 +60,23 @@ class GoogleAPI:
             values = res.get('values', [])
             return values[0]
 
+    async def is_chapter_active(self, chapter):
+        async with self.aiogoogle as g:
+            error = await g.as_service_account(
+                self._spreadsheet.values.get(spreadsheetId=self.TOPICS_SPREADSHEET_ID,
+                                             range=f"{chapter}!H2")
+            )
+
+            value = error.get("values")
+
+            if value is None or value[0][0] == '0':
+                return False
+
+            return True
+
     async def get_checkpoint(self, chapter):
         async with self.aiogoogle as g:
+
             res = await g.as_service_account(
                 self._spreadsheet.values.get(spreadsheetId=self.TOPICS_SPREADSHEET_ID,
                                              range=f"{chapter}!I2:N2")
@@ -78,6 +94,31 @@ class GoogleAPI:
             values = res.get('values', [])
             print("get_knowledge- ", values)
             return values
+
+    async def get_topics_chapters(self):
+        async with self.aiogoogle as g:
+            res = await g.as_service_account(
+                self._spreadsheet.get(spreadsheetId=self.TOPICS_SPREADSHEET_ID)
+            )
+            sheets = res.get('sheets', [])
+            titles = [[item['properties']['index'], item['properties']['title']] for item in sheets]
+            _titles = titles.copy()
+
+            for sheet in titles:
+
+                res = await g.as_service_account(
+                    self._spreadsheet.values.get(spreadsheetId=self.TOPICS_SPREADSHEET_ID,
+                                                 range=f"{sheet[1]}!H2")
+                )
+
+                value = res.get('values')
+
+                # Проверяем флаг активности (Можно ли показывать раздел)
+                if value is None or value[0][0] == '0':
+                    _titles.remove(sheet)
+
+            print("get_topics- ", titles, "\n", _titles)
+            return _titles
 
     async def get_method_info(self, chapter, method_id):
         async with self.aiogoogle as g:
