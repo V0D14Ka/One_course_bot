@@ -25,7 +25,7 @@ class GoogleAPI:
     SERVICE_ACCOUNT_FILE = 'onecourseproject.json'
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive',
               'https://www.googleapis.com/auth/calendar']
-    TOPICS_SPREADSHEET_ID = os.getenv("SAMPLE_SPREADSHEET_ID")
+    TOPICS_SPREADSHEET_ID = os.getenv("TOPICS_SPREADSHEET_ID")
     KNOWLEDGE_SPREADSHEET_ID = os.getenv("KNOWLEDGE_SPREADSHEET_ID")
     DAY_TASK_SPREADSHEET_ID = os.getenv("DAY_TASK_SPREADSHEET_ID")
     FAQ_SPREADSHEET_ID = os.getenv("FAQ_SPREADSHEET_ID")
