@@ -24,7 +24,7 @@ class FSMSetDoc(StatesGroup):
 
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
-    chapters_arr = await google_api.get_topics_chapters()
+    chapters_arr = await google_api.get_topics()
     markup = await topics_menu.menu_keyboard(chapters_arr)
 
     if isinstance(message, types.CallbackQuery):

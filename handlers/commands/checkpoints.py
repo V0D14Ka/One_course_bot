@@ -11,7 +11,7 @@ from utils import check_access
 
 async def checkpoints(message: Union[types.CallbackQuery, types.Message]):
     # items = [["1", "КТ 1"], ["2", "КТ 2"], ["3", "КТ 3"]] # Тут мы будем доставать список КТ
-    items = await google_api.get_topics_chapters()
+    items = await google_api.get_topics()
     markup = await topics_menu.menu_cp_keyboard(items)
 
     if isinstance(message, types.CallbackQuery):

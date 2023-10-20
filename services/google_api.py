@@ -95,7 +95,7 @@ class GoogleAPI:
             print("get_knowledge- ", values)
             return values
 
-    async def get_topics_chapters(self):
+    async def get_topics(self):
         async with self.aiogoogle as g:
             res = await g.as_service_account(
                 self._spreadsheet.get(spreadsheetId=self.TOPICS_SPREADSHEET_ID)
@@ -207,7 +207,7 @@ class GoogleAPI:
         except Exception as e:
             print('An error occurred: %s' % e)
 
-    async def upload(self, file_url, username, folder_id, chapter=0):
+    async def upload(self, file_url, username, folder_id, chapter):
         async with self.aiogoogle as g:
             res = await g.as_service_account(
                     self._service_drive.files.list(q=f"'{folder_id}' in parents and mimeType='application/vnd.google"
