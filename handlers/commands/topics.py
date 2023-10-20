@@ -11,12 +11,14 @@ from aiogram.dispatcher import FSMContext
 from dotenv import load_dotenv
 from googleapiclient.http import MediaIoBaseUpload
 
-from DB.models import Users
+from DB.models import Users, Teams
 from create_bot import topics_menu, google_api, bot
 from static import messages
 from utils import check_access, check_cancel_update
 
 load_dotenv()
+
+
 class FSMSetDoc(StatesGroup):
     new_value = State()
 
@@ -47,17 +49,23 @@ async def doc_set(message: types.Message, state: FSMContext, **kwargs):
             if message.document.file_size < 83886080:
                 # Сохраняем файл
                 await call.message.edit_text("Пожалуйста подождите загрузки файла🕒")
+                await state.finish()
                 user = await Users.get(id=message.from_user.id)
-                username = user.study_group + '. ' + user.full_name
+                username = user.study_group + '. ' + user.full_name + '. ' + str(user.id)
                 file_info = await bot.get_file(message.document.file_id)
 
                 BOT_TOKEN = os.getenv("TOKEN")
                 file_url = f'https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}'
                 response = requests.get(file_url, stream=True)
 
-                folder_id = "1KU8WOgqxc9LmVonxF2IEdT9bkYyQBqce"
-                await google_api.upload(io.BytesIO(response.content).getvalue(), username, folder_id)
-                await call.message.edit_text("Файл успешно сохранен!✅")
+                folder_id = os.getenv("CHECKPOINTS_FOLDER")
+                response = await google_api.upload(io.BytesIO(response.content).getvalue(), username, folder_id,
+                                                   chapter)
+                if response != "error":
+                    await call.message.edit_text("Файл успешно сохранен!✅")
+                else:
+                    await call.message.edit_text("В данный момент прием работ не принимается")
+
         else:
             await call.message.edit_text("Неверный формат файла❌. Пожалуйста, отправьте файл в формате PDF.")
             await message.delete()
@@ -107,7 +115,6 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
     choose = callback_data.get('choose')
     upload = callback_data.get('upload')
 
-
     # Смотрим какой уровень был вызван
     match current_level:
 
@@ -145,8 +152,13 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     pass
 
             elif category == "2":
+                if await Teams.exists(admin=call.from_user.id):
+                    is_lead = True
+                else:
+                    is_lead = False
+
                 info = await google_api.get_checkpoint(chapter)
-                markup = await topics_menu.checkpoint_info(chapter)
+                markup = await topics_menu.checkpoint_info(chapter, is_lead)
                 try:
                     await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
                     await call.message.edit_reply_markup(markup)

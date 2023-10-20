@@ -93,7 +93,7 @@ class TopicsMenu:
         return markup
 
     # Клавиатура для информации о КТ
-    async def checkpoint_info(self, chapter, info=0):
+    async def checkpoint_info(self, chapter, is_lead=0):
         current_level = 2
         markup = InlineKeyboardMarkup()
 
@@ -102,11 +102,12 @@ class TopicsMenu:
                                                                                         chapter=chapter, category=2))
         )
 
-        markup.row(
-            InlineKeyboardButton(text="Отправить на проверку", callback_data=self.make_callback_data(
-                level=current_level + 1,
-                chapter=chapter, category=2, upload=1))
-        )
+        if is_lead:
+            markup.row(
+                InlineKeyboardButton(text="Отправить на проверку", callback_data=self.make_callback_data(
+                    level=current_level + 1,
+                    chapter=chapter, category=2, upload=1))
+            )
 
         markup.row(
             InlineKeyboardButton(text="Назад", callback_data=self.make_callback_data(level=current_level - 1,

@@ -207,18 +207,36 @@ class GoogleAPI:
         except Exception as e:
             print('An error occurred: %s' % e)
 
-    async def upload(self, file_url, username, folder_id):
-        metadata = {
-            "name": username,
-            "parents": [folder_id],
-        }
+    async def upload(self, file_url, username, folder_id, chapter=0):
         async with self.aiogoogle as g:
-            drive_v3 = await g.discover("drive", "v3")
-            async with aiohttp.ClientSession():
-                await g.as_service_account(drive_v3.files.create(
-                    json=metadata,
-                    upload_file=file_url,
-                ))
+            res = await g.as_service_account(
+                    self._service_drive.files.list(q=f"'{folder_id}' in parents and mimeType='application/vnd.google"
+                                                     f"-apps.folder'")
+                )
+
+            if 'files' in res:
+                result = {item['name']: item['id'] for item in res['files']}
+            else:
+                return "error"
+
+            try:
+                upload_folder_id = result[f"{chapter}"]
+
+                metadata = {
+                    "name": username,
+                    "parents": [upload_folder_id],
+                }
+
+                async with aiohttp.ClientSession():
+                    await g.as_service_account(self._service_drive.files.create(
+                        json=metadata,
+                        upload_file=file_url,
+                    ))
+
+                return 200
+
+            except:
+                return "error"
 
     async def check_user(self, group, full_name):
         async with self.aiogoogle as g:
