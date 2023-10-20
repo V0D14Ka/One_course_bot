@@ -1,5 +1,5 @@
 from DB.db import db_init
-from create_bot import dp, google_api
+from create_bot import dp, google_api, db_url
 from aiogram.utils import executor
 from handlers import (start, menu, register_schedule_handlers, register_info_handlers, register_topics_handlers,
                       register_personal_handlers, register_day_task_handlers, register_checkpoints_handlers,
@@ -19,7 +19,7 @@ register_teams_handlers(dp)
 
 
 async def on_startup(_):
-    await db_init()
+    await db_init(db_url)
     await google_api.init()
     print("Бот запущен")
 
