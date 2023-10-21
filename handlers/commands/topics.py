@@ -93,13 +93,18 @@ async def doc_set_text(message: types.Message, state: FSMContext, **kwargs):
 
         # Обработка отмены
         if message.text.lower() == 'отмена':
-            markup = await InlineMenu().topics_menu.checkpoint_info(chapter)
+            info = await GoogleAPI().get_checkpoint(chapter)
             try:
-                info = await GoogleAPI().get_checkpoint(chapter)
                 await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
+                markup = await InlineMenu().topics_menu.checkpoint_info(chapter, is_lead=True)
                 await call.message.edit_reply_markup(markup)
             except MessageNotModified:
                 pass
+            except:
+                await call.message.edit_text(f"В данный момент нет информации о КТ {chapter}")
+                markup = await InlineMenu().topics_menu.checkpoint_info(chapter, is_lead=True, info=False)
+                await call.message.edit_reply_markup(markup)
+
             await message.delete()
             await state.finish()
             return
@@ -167,14 +172,15 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     is_lead = False
 
                 info = await GoogleAPI().get_checkpoint(chapter)
-                markup = await InlineMenu().topics_menu.checkpoint_info(chapter, is_lead)
                 try:
                     info = info[0]
+                    markup = await InlineMenu().topics_menu.checkpoint_info(chapter, is_lead)
                     await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
                     await call.message.edit_reply_markup(markup)
                 except MessageNotModified:
                     pass
                 except:
+                    markup = await InlineMenu().topics_menu.checkpoint_info(chapter, is_lead, info=False)
                     await call.message.edit_text(f"В данный момент нет информации о КТ {chapter}")
                     await call.message.edit_reply_markup(markup)
 
@@ -220,10 +226,15 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     info = await GoogleAPI().get_checkpoint(chapter)
                     markup = await InlineMenu().topics_menu.back_keyboard(chapter, theme, category, 3)
                     try:
+                        info = info[0]
                         await call.message.edit_text(f'{info[-1]}')
                         await call.message.edit_reply_markup(markup)
                     except MessageNotModified:
                         pass
+                    except:
+                        await call.message.edit_text(f'В данный момент нет информации')
+                        await call.message.edit_reply_markup(markup)
+
 
             else:
                 raise Exception("Не знаю такой категории")
