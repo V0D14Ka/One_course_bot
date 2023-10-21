@@ -13,20 +13,21 @@ from utils import check_access
 
 
 async def knowledge(message: Union[types.CallbackQuery, types.Message]):
-    markup = await InlineMenu().knowledge_menu.menu_keyboard()
-
-    if isinstance(message, types.CallbackQuery):
-        call = message
-        try:
-            await call.message.edit_text("Выберите пункт")
-            await call.message.edit_reply_markup(markup)
-        except MessageNotModified:
-            pass
 
     if isinstance(message, types.Message):
         if await check_access(message) is False:
             return
+        markup = await InlineMenu().knowledge_menu.menu_keyboard()
         await message.answer("Выберите пункт", reply_markup=markup)
+
+    if isinstance(message, types.CallbackQuery):
+        call = message
+        try:
+            markup = await InlineMenu().knowledge_menu.menu_keyboard()
+            await call.message.edit_text("Выберите пункт")
+            await call.message.edit_reply_markup(markup)
+        except MessageNotModified:
+            pass
 
 
 async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_data: dict):
