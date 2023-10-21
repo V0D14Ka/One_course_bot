@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from keyboards import InlineMenu
 from services.google_api import GoogleAPI
-from static.messages import make_method_info, format_faq_array_to_string
+from static.messages import format_faq_array_to_string
 from utils import check_access
 
 load_dotenv()

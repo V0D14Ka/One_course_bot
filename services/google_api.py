@@ -1,16 +1,12 @@
-import mimetypes
-import os
 import datetime
-from datetime import timedelta
-import asyncio
 import json
-import pprint
+import os
+from datetime import timedelta
 
 import aiohttp
-from dotenv import load_dotenv
 from aiogoogle import Aiogoogle
+from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaFileUpload
 
 load_dotenv()
 

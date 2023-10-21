@@ -1,17 +1,14 @@
 from typing import Union
 
 from aiogram import types, Dispatcher
-from aiogram.dispatcher.filters.state import StatesGroup, State
-from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized, \
-    MessageNotModified
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.utils.exceptions import MessageNotModified
 from aiogram.utils.markdown import hlink
 
 from DB.models import Users, Teams
 from keyboards import InlineMenu
 from services.google_api import GoogleAPI
-from static.dictionaries import methods
-from static.messages import make_method_info
 from utils import check_access, check_cancel_update, check_validate, Validation
 
 
