@@ -21,7 +21,15 @@ def load_creds_from_file(file_path):
     return creds_data
 
 
-class GoogleAPI:
+class GoogleAPI(object):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(GoogleAPI, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     SERVICE_ACCOUNT_FILE = 'onecourseproject.json'
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive',
               'https://www.googleapis.com/auth/calendar']
@@ -40,6 +48,7 @@ class GoogleAPI:
             self._service_drive = await aiogoogle.discover("drive", "v3")
         self._spreadsheet = self._service_sheets.spreadsheets
         self.aiogoogle = aiogoogle
+        self._initialized = True
 
     async def get_themes(self, chapter):
         print(chapter)

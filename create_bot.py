@@ -23,7 +23,7 @@ faq_menu = FAQMenu()
 personal_menu = PersonalMenu()
 teams_menu = TeamsMenu()
 
-google_api = GoogleAPI()
+# google_api = GoogleAPI()
 validation = Validation()
 
 storage = MemoryStorage()

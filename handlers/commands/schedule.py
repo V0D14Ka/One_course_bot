@@ -6,7 +6,8 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
-from create_bot import schedule_menu, google_api
+from create_bot import schedule_menu
+from services.google_api import GoogleAPI
 from utils import check_access
 from utils.calendar import make_lessons_info, make_period_info
 
@@ -51,10 +52,10 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                           "5": "month"}
 
             if category in "123":
-                lessons = await google_api.get_lessons_dates(categories[category])
+                lessons = await GoogleAPI().get_lessons_dates(categories[category])
                 answer = await make_lessons_info(lessons)
             else:
-                lessons = await google_api.get_period_lessons(categories[category])
+                lessons = await GoogleAPI().get_period_lessons(categories[category])
                 answer = await make_period_info(lessons, categories[category])
             markup = await schedule_menu.back_keyboard()
 

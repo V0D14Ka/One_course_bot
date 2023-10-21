@@ -8,7 +8,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.utils.markdown import hlink
 
 from DB.models import Users, Teams
-from create_bot import teams_menu, google_api, validation
+from create_bot import teams_menu, validation
+from services.google_api import GoogleAPI
 from static.dictionaries import methods
 from static.messages import make_method_info
 from utils import check_access, check_cancel_update, check_validate
@@ -76,7 +77,7 @@ async def get_keyboard(user_id):
 
 
 async def check_team(call, group, full_name):
-    status, col = await google_api.check_user_team(group, full_name)
+    status, col = await GoogleAPI().check_user_team(group, full_name)
     match status:
         case 400:
             await call.message.edit_text(
@@ -136,7 +137,7 @@ async def find_team(message: types.Message, state: FSMContext, **kwargs):
             await message.delete()
             return
 
-        await google_api.set_team(team.admin, col, user.study_group)
+        await GoogleAPI().set_team(team.admin, col, user.study_group)
         user.team = team
         team.count += 1
         await team.save()
@@ -156,7 +157,7 @@ async def team_create(call, user_id):
             return
 
         team = await Teams.create(admin=user_id)
-        await google_api.set_team(user_id, col, user.study_group)
+        await GoogleAPI().set_team(user_id, col, user.study_group)
 
         user.team = team
         await user.save()
@@ -174,7 +175,7 @@ async def team_delete(message: types.Message, state: FSMContext, **kwargs):
 
         if message.text.lower() == "да":
             team = await Teams.get(id=team_id)
-            await google_api.delete_team(team.admin)
+            await GoogleAPI().delete_team(team.admin)
             await team.delete()
 
         try:
@@ -197,10 +198,10 @@ async def team_leave(message: types.Message, state: FSMContext, **kwargs):
             team = await Teams.get(id=team_id)
             user = await Users.get(id=call.from_user.id)
 
-            status, col = await google_api.get_team_col(user.study_group, user.full_name)
+            status, col = await GoogleAPI().get_team_col(user.study_group, user.full_name)
 
             if status == 200:
-                await google_api.set_team("", col, user.study_group)
+                await GoogleAPI().set_team("", col, user.study_group)
                 user.team = None
                 team.count -= 1
                 await user.save()
