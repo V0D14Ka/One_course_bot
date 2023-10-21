@@ -95,6 +95,7 @@ async def doc_set_text(message: types.Message, state: FSMContext, **kwargs):
         if message.text.lower() == 'отмена':
             info = await GoogleAPI().get_checkpoint(chapter)
             try:
+                info = info[0]
                 await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
                 markup = await InlineMenu().topics_menu.checkpoint_info(chapter, is_lead=True)
                 await call.message.edit_reply_markup(markup)
