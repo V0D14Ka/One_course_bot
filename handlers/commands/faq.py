@@ -6,7 +6,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 
-from create_bot import faq_menu
+from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from static.messages import make_method_info, format_array_to_string
 from utils import check_access
@@ -49,4 +49,4 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
 def register_faq_handlers(_dp: Dispatcher):
     _dp.register_message_handler(faq, commands=['FAQ', 'faq'])
-    _dp.register_callback_query_handler(menu_navigate, faq_menu.menu_cd.filter(), state=None)
+    _dp.register_callback_query_handler(menu_navigate, InlineMenu().faq_menu.menu_cd.filter(), state=None)

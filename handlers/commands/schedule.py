@@ -6,14 +6,14 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
-from create_bot import schedule_menu
+from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from utils import check_access
 from utils.calendar import make_lessons_info, make_period_info
 
 
 async def schedule(message: Union[types.CallbackQuery, types.Message]):
-    markup = await schedule_menu.menu_keyboard()
+    markup = await InlineMenu().schedule_menu.menu_keyboard()
 
     if isinstance(message, types.CallbackQuery):
         call = message
@@ -57,7 +57,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
             else:
                 lessons = await GoogleAPI().get_period_lessons(categories[category])
                 answer = await make_period_info(lessons, categories[category])
-            markup = await schedule_menu.back_keyboard()
+            markup = await InlineMenu().schedule_menu.back_keyboard()
 
             try:
                 await call.message.edit_text(answer)
@@ -68,4 +68,4 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
 def register_schedule_handlers(_dp: Dispatcher):
     _dp.register_message_handler(schedule, commands=['schedule'])
-    _dp.register_callback_query_handler(menu_navigate, schedule_menu.menu_cd.filter(), state=None)
+    _dp.register_callback_query_handler(menu_navigate, InlineMenu().schedule_menu.menu_cd.filter(), state=None)

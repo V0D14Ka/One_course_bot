@@ -5,7 +5,7 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
-from create_bot import knowledge_menu
+from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from static.dictionaries import methods
 from static.messages import make_method_info
@@ -13,7 +13,7 @@ from utils import check_access
 
 
 async def knowledge(message: Union[types.CallbackQuery, types.Message]):
-    markup = await knowledge_menu.menu_keyboard()
+    markup = await InlineMenu().knowledge_menu.menu_keyboard()
 
     if isinstance(message, types.CallbackQuery):
         call = message
@@ -47,7 +47,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
         case "1":
             info = await GoogleAPI().get_knowledge(methods[f"{category}"])
 
-            markup = await knowledge_menu.choose_method(category, info)
+            markup = await InlineMenu().knowledge_menu.choose_method(category, info)
             try:
                 await call.message.edit_text("Выберите подраздел")
                 await call.message.edit_reply_markup(markup)
@@ -57,7 +57,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
         case "2":
             info = await GoogleAPI().get_method_info(methods[f"{category}"], method_id)
             formatted_string = await make_method_info(info)
-            markup = await knowledge_menu.back_keyboard(category)
+            markup = await InlineMenu().knowledge_menu.back_keyboard(category)
             try:
                 await call.message.edit_text(formatted_string)
                 await call.message.edit_reply_markup(markup)
@@ -67,4 +67,4 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
 def register_knowledge_handlers(_dp: Dispatcher):
     _dp.register_message_handler(knowledge, commands=['knowledge'])
-    _dp.register_callback_query_handler(menu_navigate, knowledge_menu.menu_cd.filter(), state=None)
+    _dp.register_callback_query_handler(menu_navigate, InlineMenu().knowledge_menu.menu_cd.filter(), state=None)

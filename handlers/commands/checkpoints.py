@@ -5,14 +5,14 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
-from create_bot import topics_menu
+from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from utils import check_access
 
 
 async def checkpoints(message: Union[types.CallbackQuery, types.Message]):
     items = await GoogleAPI().get_topics()
-    markup = await topics_menu.menu_cp_keyboard(items)
+    markup = await InlineMenu().topics_menu.menu_cp_keyboard(items)
 
     if isinstance(message, types.CallbackQuery):
         call = message
