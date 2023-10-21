@@ -30,6 +30,14 @@ ask_for_update_user_info = '''
 Обращаю ваше внимание: в случае отмены весь прогресс будет утерян.
 '''
 
+ask_for_update_user_group = '''
+Шаг %s/3.
+Введите %s.
+Выберите группу из предложенных : %s.
+Для отмены напишите "Отмена". 
+Обращаю ваше внимание: в случае отмены весь прогресс будет утерян.
+'''
+
 example_cp = '''
 1. Название тем: %s.
 2. Список кейсов: %s.
@@ -68,9 +76,16 @@ async def make_method_info(info):
     return f"{info[0]}:\n" + formatted_string
 
 
-async def format_array_to_string(data):
+def format_faq_array_to_string(data):
     result = ""
     for index, item in enumerate(data, start=1):
         question, answer = item[0].split('-')
         result += f"{index}.'{question}'-{answer}\n"
     return result
+
+
+def format_array_to_string(data):
+    result = ""
+    for item in data:
+        result += f"{item},"
+    return result[:-1]

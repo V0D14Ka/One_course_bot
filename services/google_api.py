@@ -104,6 +104,17 @@ class GoogleAPI(object):
             print("get_knowledge- ", values)
             return values
 
+    async def get_groups(self):
+        async with self.aiogoogle as g:
+            res = await g.as_service_account(
+                self._spreadsheet.get(spreadsheetId=self.GROUP_SPREADSHEET_ID)
+            )
+            sheets = res.get('sheets', [])
+            titles = [item['properties']['title'] for item in sheets]
+
+            print("get_groups- ", titles)
+            return titles
+
     async def get_topics(self):
         async with self.aiogoogle as g:
             res = await g.as_service_account(
