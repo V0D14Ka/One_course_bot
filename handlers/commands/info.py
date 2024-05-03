@@ -1,6 +1,6 @@
 from typing import Union
 
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized
 from aiogram.dispatcher import FSMContext
@@ -18,3 +18,7 @@ async def info(message: Union[types.CallbackQuery, types.Message]):
 
     if isinstance(message, types.Message):
         await message.answer(messages.info_mesg)
+
+
+def register_info_handlers(_dp: Dispatcher):
+    _dp.register_message_handler(info, commands=['info'])

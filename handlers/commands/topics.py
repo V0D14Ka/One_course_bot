@@ -18,3 +18,7 @@ async def topics(message: Union[types.CallbackQuery, types.Message]):
 
     if isinstance(message, types.Message):
         await message.answer("Выбран список разделов курса")
+
+
+def register_topics_handlers(_dp: Dispatcher):
+    _dp.register_message_handler(topics, commands=['topics'])

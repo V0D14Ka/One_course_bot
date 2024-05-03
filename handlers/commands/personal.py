@@ -18,3 +18,7 @@ async def personal(message: Union[types.CallbackQuery, types.Message]):
 
     if isinstance(message, types.Message):
         await message.answer("Выбрано о себе")
+
+
+def register_personal_handlers(_dp: Dispatcher):
+    _dp.register_message_handler(personal, commands=['personal'])

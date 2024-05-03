@@ -18,3 +18,7 @@ async def checkpoints(message: Union[types.CallbackQuery, types.Message]):
 
     if isinstance(message, types.Message):
         await message.answer("Выбрано чекпоинты")
+
+
+def register_checkpoints_handlers(_dp: Dispatcher):
+    _dp.register_message_handler(checkpoints, commands=['checkpoints'])
