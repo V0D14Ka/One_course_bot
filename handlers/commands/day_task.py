@@ -1,13 +1,9 @@
 from typing import Union
 
 from aiogram import types, Dispatcher
-from aiogram.dispatcher.filters.state import StatesGroup, State
-from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized
 from aiogram.dispatcher import FSMContext
 
-from DB.models import Users
-from create_bot import bot, day_task_menu
-from static import messages
+from create_bot import day_task_menu
 from utils import check_access
 
 
