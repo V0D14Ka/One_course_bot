@@ -1,17 +1,24 @@
+import os
 from typing import Union
 
 from aiogram import types, Dispatcher
+from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized, \
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
-from create_bot import topics_menu
+from create_bot import topics_menu, google_api
 from static import messages
-from utils import check_access
+from static.dictionaries import chapters
+from utils import check_access, check_cancel_update
+
+
+class FSMSetDoc(StatesGroup):
+    new_value = State()
 
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
-    arr = [["1", "Раздел 1"], ["2", "Раздел 2"], ["3", "Раздел 3"]]
+    arr = [["1", "Раздел1"], ["2", "Раздел2"], ["3", "Раздел3"]]
     markup = await topics_menu.menu_keyboard(arr)
     if isinstance(message, types.CallbackQuery):
         call = message
@@ -24,6 +31,49 @@ async def topics(message: Union[types.CallbackQuery, types.Message]):
         await message.answer("Выберите раздел курса", reply_markup=markup)
 
 
+async def doc_set(message: types.Message, state: FSMContext, **kwargs):
+    async with state.proxy() as data:
+        # Забираем необходимую информацию
+        category = data["category"]
+        call = data["call"]
+        chapter = data["chapter"]
+
+        if message.document.mime_type in ['application/pdf']:
+            # Сохраняем файл
+            file_path = os.path.join('saved_files', "hello.pdf")
+            await message.document.download(destination=file_path)
+            await call.message.edit_text("Файл успешно сохранен!")
+        else:
+            await call.message.edit_text("Неверный формат файла. Пожалуйста, отправьте PDF файл.")
+            await message.delete()
+            return
+
+        await message.delete()
+        await state.finish()
+
+
+async def doc_set_text(message: types.Message, state: FSMContext, **kwargs):
+    async with state.proxy() as data:
+        # Забираем необходимую информацию
+        call = data["call"]
+        chapter = data["chapter"]
+
+        # Обработка отмены
+        if message.text.lower() == 'отмена':
+            markup = await topics_menu.checkpoint_info(chapter)
+            try:
+                await call.message.edit_text(messages.example_cp)
+                await call.message.edit_reply_markup(markup)
+            except MessageNotModified:
+                pass
+            await message.delete()
+            await state.finish()
+            return
+
+        await call.message.edit_text("Отправьте документ в формате pdf или напишите 'отмена'")
+        await message.delete()
+
+
 async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_data: dict):
     """
         Навигация по меню checkpoint
@@ -34,6 +84,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
     item_id = callback_data.get('item_id')
     chapter = callback_data.get('chapter')
     theme = callback_data.get('theme')
+    choose = callback_data.get('choose')
 
     # Смотрим какой уровень был вызван
     match current_level:
@@ -44,14 +95,14 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
         case "1":
             markup = await topics_menu.choose_category(chapter)
             try:
-                await call.message.edit_text(f'Что вы хотите узнать в разделе {chapter}?')
+                await call.message.edit_text(f'Что вы хотите узнать в {chapters[f"{chapter}"]}?')
                 await call.message.edit_reply_markup(markup)
             except MessageNotModified:
                 pass
 
         case "2":
             if category == "1":
-                themes = [["1", "Тема 1"], ["2", "Тема 2"], ["3", "Тема 3"]]
+                themes = await google_api.get_themes(chapters[f"{chapter}"])
                 markup = await topics_menu.choose_theme(chapter, themes)
                 try:
                     await call.message.edit_text(f'Темы раздела {chapter}')
@@ -74,26 +125,33 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
             if category == "1":
                 markup = await topics_menu.theme_info(chapter, theme)
                 try:
-                    await call.message.edit_text(f'Выберите пункт темы {theme}')
+                    await call.message.edit_text(f'Выберите пункт темы:')
                     await call.message.edit_reply_markup(markup)
                 except MessageNotModified:
                     pass
 
             elif category == "2":
-                markup = await topics_menu.back_keyboard(chapter, theme, category, 3)
                 try:
-                    await call.message.edit_text(f'Здесь будут инфа + ссылки')
-                    await call.message.edit_reply_markup(markup)
+                    await call.message.edit_text(f'Загрузите файл в формате pdf')
                 except MessageNotModified:
                     pass
+
+                async with state.proxy() as data:
+                    # Передаем необходимую информацию
+                    data["category"] = category
+                    data["call"] = call
+                    data["chapter"] = chapter
+                    await FSMSetDoc.new_value.set()
 
             else:
                 raise Exception("Не знаю такой категории")
 
         case "4":
+            info = await google_api.get_theme_info(chapters[f"{chapter}"], theme)
             markup = await topics_menu.back_keyboard(chapter, theme, category, 4)
             try:
-                await call.message.edit_text(f'Здесь будут инфа + ссылки')
+                print(info, "-", choose)
+                await call.message.edit_text(f'{info[int(choose)]}')
                 await call.message.edit_reply_markup(markup)
             except MessageNotModified:
                 pass
@@ -101,4 +159,6 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
 def register_topics_handlers(_dp: Dispatcher):
     _dp.register_message_handler(topics, commands=['topics'])
+    _dp.register_message_handler(doc_set, state=FSMSetDoc.new_value, content_types=['document'])
+    _dp.register_message_handler(doc_set_text, state=FSMSetDoc.new_value)
     _dp.register_callback_query_handler(menu_navigate, topics_menu.menu_cd.filter(), state=None)
