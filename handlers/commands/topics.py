@@ -6,8 +6,10 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
+from DB.models import Users
 from create_bot import bot, topics_menu
 from static import messages
+from utils import check_access
 
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
@@ -19,6 +21,8 @@ async def topics(message: Union[types.CallbackQuery, types.Message]):
         await call.message.edit_reply_markup(markup)
 
     if isinstance(message, types.Message):
+        if await check_access(message) is False:
+            return
         await message.answer("Выберите раздел курса", reply_markup=markup)
 
 
