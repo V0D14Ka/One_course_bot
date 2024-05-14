@@ -88,6 +88,8 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
     theme = callback_data.get('theme')
     choose = callback_data.get('choose')
 
+    await google_api.get_week_lessons()
+
     # Смотрим какой уровень был вызван
     match current_level:
 
