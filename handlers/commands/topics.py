@@ -103,8 +103,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
     chapter = callback_data.get('chapter')
     theme = callback_data.get('theme')
     choose = callback_data.get('choose')
-
-    # await google_api.check_user("Б9121", "Иванов Иван Иванов")
+    upload = callback_data.get('upload')
 
     # Смотрим какой уровень был вызван
     match current_level:
@@ -152,17 +151,26 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     pass
 
             elif category == "2":
-                try:
-                    await call.message.edit_text(f'Загрузите файл в формате pdf или напишите "Отмена"')
-                except MessageNotModified:
-                    pass
+                if upload == "1":
+                    try:
+                        await call.message.edit_text(f'Загрузите файл в формате pdf или напишите "Отмена"')
+                    except MessageNotModified:
+                        pass
 
-                async with state.proxy() as data:
-                    # Передаем необходимую информацию
-                    data["category"] = category
-                    data["call"] = call
-                    data["chapter"] = chapter
-                    await FSMSetDoc.new_value.set()
+                    async with state.proxy() as data:
+                        # Передаем необходимую информацию
+                        data["category"] = category
+                        data["call"] = call
+                        data["chapter"] = chapter
+                        await FSMSetDoc.new_value.set()
+                else:
+                    info = await google_api.get_checkpoint(chapters[f"{chapter}"])
+                    markup = await topics_menu.back_keyboard(chapter, theme, category, 3)
+                    try:
+                        await call.message.edit_text(f'{info[-1]}')
+                        await call.message.edit_reply_markup(markup)
+                    except MessageNotModified:
+                        pass
 
             else:
                 raise Exception("Не знаю такой категории")

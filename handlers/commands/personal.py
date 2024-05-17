@@ -111,7 +111,7 @@ async def fullname_set(message: types.Message, state: FSMContext, **kwargs):
         match status:
             case 400:
                 if str(message.from_user.id) != tg:
-                    await personal(call, error="Такой студент уже зарегистрирован под другим telegram_id")
+                    await personal(call, error="Такой студент уже зарегистрирован под другим telegram_id, проверьте правильность данных и повторите попытку")
                     try:
                         await message.delete()
                     except:
@@ -120,9 +120,10 @@ async def fullname_set(message: types.Message, state: FSMContext, **kwargs):
                     return
 
             case 200:
-                await call.message.edit_text("Аутентификация успешна")
+                print(message.from_user.id, tg, group)
+                await google_api.set_id(message.from_user.id, tg, group)
             case 404:
-                await personal(call, error="Студент с данным именем, в данной группе не найден")
+                await personal(call, error="Студент с данным именем, в данной группе не найден. Проверьте данные и повторите попытку")
                 try:
                     await message.delete()
                 except:
