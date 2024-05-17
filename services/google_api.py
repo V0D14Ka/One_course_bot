@@ -29,6 +29,7 @@ class GoogleAPI:
     KNOWLEDGE_SPREADSHEET_ID = os.getenv("KNOWLEDGE_SPREADSHEET_ID")
     DAY_TASK_SPREADSHEET_ID = os.getenv("DAY_TASK_SPREADSHEET_ID")
     FAQ_SPREADSHEET_ID = os.getenv("FAQ_SPREADSHEET_ID")
+    GROUP_SPREADSHEET_ID = os.getenv("GROUP_SPREADSHEET_ID")
     CALENDAR_ID = os.getenv("CALENDAR_ID")
 
     async def init(self):
@@ -175,35 +176,33 @@ class GoogleAPI:
             drive_v3 = await g.discover("drive", "v3")
             async with aiohttp.ClientSession():
                 await g.as_service_account(drive_v3.files.create(
-                        json=metadata,
-                        upload_file=file_url,
+                    json=metadata,
+                    upload_file=file_url,
                 ))
 
+    async def check_user(self, group, full_name):
+        async with self.aiogoogle as g:
+            try:
+                res = await g.as_service_account(
+                    self._spreadsheet.values.get(spreadsheetId=self.GROUP_SPREADSHEET_ID,
+                                                 range=f"{group}!B2:C")
+                )
+            except:
+                return 500, 0
 
-async def upload_file(full_path, new_name):
-    SERVICE_ACCOUNT_FILE = 'onecourseproject.json'
-    creds_data = load_creds_from_file(SERVICE_ACCOUNT_FILE)
-    async with Aiogoogle(service_account_creds=creds_data) as aiogoogle:
-        # Create API
-        drive_v3 = await aiogoogle.discover("drive", "v3")
+            values = res.get('values', [])
 
-        req = drive_v3.files.create(
-            upload_file=full_path,
-            fields="id",
-            json={"name": new_name}
-        )
+            count = 0
+            for row in values:
+                count += 1
+                if full_name == row[0]:
+                    try:
+                        if row[1] is not None:
+                            print("check_user - User is logged")
+                            return 400, row[1]
+                    except:
+                        print(f"check_user - C{count}")
+                        return 200, 0
 
-        # Usually autodetected by Drive
-        # mimetypes autodetects the mimetype by file extension, which isn't always accurate.
-        # You may want to manually enter this for some extra assurance.
-        req.upload_file_content_type = mimetypes.guess_type(full_path)[0]
-
-        # Upload file
-        upload_res = await aiogoogle.as_service_account(req)
-        print("Uploaded {} successfully.\nFile ID: {}".format(full_path, upload_res['id']))
-        # file_id = upload_res["id"]
-        # # Rename uploaded file
-        # await aiogoogle.as_user(
-        #     drive_v3.files.update(fileId=file_id, json={"name": new_name})
-        # )
-        # print("Renamed {} to {} successfully!".format(full_path, new_name))
+            print("check_user - student is not exist ")
+            return 404, 0
