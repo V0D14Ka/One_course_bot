@@ -8,7 +8,7 @@ from services.google_api import GoogleAPI
 from utils import Validation
 
 from keyboards import (InlineMenu, ScheduleMenu, KnowledgeMenu, TopicsMenu, DayTaskMenu, FAQMenu,
-                       PersonalMenu)
+                       PersonalMenu, TeamsMenu)
 
 load_dotenv()
 
@@ -19,6 +19,8 @@ topics_menu = TopicsMenu()
 day_task_menu = DayTaskMenu()
 faq_menu = FAQMenu()
 personal_menu = PersonalMenu()
+teams_menu = TeamsMenu()
+
 google_api = GoogleAPI()
 validation = Validation()
 
