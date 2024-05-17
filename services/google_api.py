@@ -166,8 +166,7 @@ class GoogleAPI:
         except Exception as e:
             print('An error occurred: %s' % e)
 
-    async def upload(self, file_url, username):
-        folder_id = "1KU8WOgqxc9LmVonxF2IEdT9bkYyQBqce"
+    async def upload(self, file_url, username, folder_id):
         metadata = {
             "name": username,
             "parents": [folder_id],
