@@ -36,3 +36,4 @@ class Users(Model):
 class Teams(Model):
     id = fields.IntField(pk=True)
     admin = fields.CharField(max_length=12, null=True)
+    count = fields.IntField(default=1)
