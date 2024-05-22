@@ -62,15 +62,38 @@ async def get_keyboard(user_id):
     if await user.team is None:
         markup = await teams_menu.menu_keyboard(True)
         return "Вы не состоите в команде", markup
+
     else:
         team = await user.team
 
         if await Teams.exists(admin=user_id):
-            markup = await teams_menu.menu_keyboard(False, team.id)
-            return f"Вы в команде, код для вступления в команду - {user_id}", markup
+            if await Teams.get(admin=user_id) == team:
+                markup = await teams_menu.menu_keyboard(False, team.id)
+                return f"Вы в команде, код для вступления в команду - {user_id}", markup
 
         markup = await teams_menu.menu_keyboard(False, team.id)
         return "Вы в команде", markup
+
+
+async def check_team(call, group, full_name):
+    status, col = await google_api.check_user_team(group, full_name)
+    match status:
+        case 400:
+            await call.message.edit_text(
+                "Вы уже состоите в группе, покиньте предыдущую и попробуйте снова.")
+            return 1, 1
+
+        case 200:
+            return 200, col
+        case 404:
+            await call.message.edit_text(
+                "Произошла ошибка, вы не были найдены в списке вашей учебной группы")
+            return 1, 1
+
+        case 500:
+            await call.message.edit_text(
+                "Произошла непридвиденная ошибка, попробуйте позже")
+            return 1, 1
 
 
 async def find_team(message: types.Message, state: FSMContext, **kwargs):
@@ -105,6 +128,15 @@ async def find_team(message: types.Message, state: FSMContext, **kwargs):
             return
 
         user = await Users.get(id=message.from_user.id)
+
+        status, col = await check_team(call=call, group=user.study_group, full_name=user.full_name)
+
+        if status != 200:
+            await state.finish()
+            await message.delete()
+            return
+
+        await google_api.set_team(team.admin, col, user.study_group)
         user.team = team
         team.count += 1
         await team.save()
@@ -115,6 +147,25 @@ async def find_team(message: types.Message, state: FSMContext, **kwargs):
         await teams(call)
 
 
+async def team_create(call, user_id):
+    try:
+        user = await Users.get(id=user_id)
+        status, col = await check_team(call=call, group=user.study_group, full_name=user.full_name)
+
+        if status != 200:
+            return
+
+        team = await Teams.create(admin=user_id)
+        await google_api.set_team(user_id, col, user.study_group)
+
+        user.team = team
+        await user.save()
+        await teams(call)
+
+    except Exception as e:
+        raise e
+
+
 async def team_delete(message: types.Message, state: FSMContext, **kwargs):
     async with state.proxy() as data:
         # Забираем необходимую информацию
@@ -123,6 +174,7 @@ async def team_delete(message: types.Message, state: FSMContext, **kwargs):
 
         if message.text.lower() == "да":
             team = await Teams.get(id=team_id)
+            await google_api.delete_team(team.admin)
             await team.delete()
 
         try:
@@ -143,10 +195,21 @@ async def team_leave(message: types.Message, state: FSMContext, **kwargs):
         if message.text.lower() == "да":
             team = await Teams.get(id=team_id)
             user = await Users.get(id=call.from_user.id)
-            user.team = None
-            team.count -= 1
-            await user.save()
-            await team.save()
+
+            status, col = await google_api.get_team_col(user.study_group, user.full_name)
+
+            if status == 200:
+                await google_api.set_team("", col, user.study_group)
+                user.team = None
+                team.count -= 1
+                await user.save()
+                await team.save()
+
+            else:
+                await call.message.edit_text("Произошла непредвиденная ошибка, попробуйте позже")
+                await message.delete()
+                await state.finish()
+                return
 
         try:
             await message.delete()
@@ -177,14 +240,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
             if category == "1":
                 if method_id == "1":
                     # Логика создания команды
-                    try:
-                        team = await Teams.create(admin=call.from_user.id)
-                        user = await Users.get(id=call.from_user.id)
-                        user.team = team
-                        await user.save()
-                        await teams(call)
-                    except Exception as e:
-                        raise e
+                    await team_create(call, call.from_user.id)
                     return
                 else:
                     await call.message.edit_text("Напишите код для вступления в команду.")
