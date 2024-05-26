@@ -3,6 +3,7 @@ python-dotenv~=0.21.0
 tortoise-orm~=0.19.3
 aiosqlite
 aiohttp
+aiogoogle
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
