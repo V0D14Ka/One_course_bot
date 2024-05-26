@@ -51,6 +51,13 @@ async def doc_set(message: types.Message, state: FSMContext, **kwargs):
                 await call.message.edit_text("Пожалуйста подождите загрузки файла🕒")
                 await state.finish()
                 user = await Users.get(id=message.from_user.id)
+
+                # Дополнительная проверка на случай использования старого меню
+                if not await Teams.exists(admin=user.id):
+                    await call.message.edit_text("Чтобы отправить файл на проверку, необходимо быть лидером команды")
+                    await message.delete()
+                    return
+
                 username = user.study_group + '. ' + user.full_name + '. ' + str(user.id)
                 file_info = await bot.get_file(message.document.file_id)
 
