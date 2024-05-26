@@ -18,7 +18,7 @@ class TopicsMenu:
 
     async def menu_cp_keyboard(self, points):
         """
-            Клавиатура уровень 0
+            Клавиатура уровень 0 checkpoints
         """
         markup = InlineKeyboardMarkup()
 
@@ -26,7 +26,7 @@ class TopicsMenu:
             button_text = f"{point[1]}"
             markup.row(
                 InlineKeyboardButton(text=button_text, callback_data=self.make_callback_data(level=2,
-                                                                                      chapter=point[0],
+                                                                                      chapter=point[1],
                                                                                       category=2))
             )
 
@@ -34,7 +34,7 @@ class TopicsMenu:
 
     async def menu_keyboard(self, chapters):
         """
-            Клавиатура уровень 0
+            Клавиатура уровень 0 topics
         """
 
         current_level = 0
@@ -42,7 +42,7 @@ class TopicsMenu:
 
         for topic in chapters:
             button_text = f"{topic[1]}"
-            callback_data = self.make_callback_data(level=current_level + 1, chapter=topic[0])
+            callback_data = self.make_callback_data(level=current_level + 1, chapter=topic[1])
 
             markup.row(
                 InlineKeyboardButton(text=button_text, callback_data=callback_data)

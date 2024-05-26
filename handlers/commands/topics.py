@@ -14,7 +14,6 @@ from googleapiclient.http import MediaIoBaseUpload
 from DB.models import Users
 from create_bot import topics_menu, google_api, bot
 from static import messages
-from static.dictionaries import chapters, chapters_arr
 from utils import check_access, check_cancel_update
 
 load_dotenv()
@@ -23,6 +22,7 @@ class FSMSetDoc(StatesGroup):
 
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
+    chapters_arr = await google_api.get_topics_chapters()
     markup = await topics_menu.menu_keyboard(chapters_arr)
 
     if isinstance(message, types.CallbackQuery):
@@ -77,7 +77,7 @@ async def doc_set_text(message: types.Message, state: FSMContext, **kwargs):
         if message.text.lower() == 'отмена':
             markup = await topics_menu.checkpoint_info(chapter)
             try:
-                info = await google_api.get_checkpoint(chapters[f"{chapter}"])
+                info = await google_api.get_checkpoint(chapter)
                 await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
                 await call.message.edit_reply_markup(markup)
             except MessageNotModified:
@@ -117,14 +117,26 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
         case "1":
             markup = await topics_menu.choose_category(chapter)
             try:
-                await call.message.edit_text(f'Что вы хотите узнать в {chapters[f"{chapter}"]}?')
+                await call.message.edit_text(f'Что вы хотите узнать в {chapter}?')
                 await call.message.edit_reply_markup(markup)
             except MessageNotModified:
                 pass
 
         case "2":
+
+            is_active = await google_api.is_chapter_active(chapter)
+            print(f"Level 2, Chapter: {chapter}, is active :{is_active}")
+            if not is_active:
+                try:
+                    await call.message.edit_text(f'В данный момент нельзя взаимодействовать с {chapter}')
+                    markup = await topics_menu.back_keyboard(chapter, theme, category, level=1)
+                    await call.message.edit_reply_markup(markup)
+                    return
+                except MessageNotModified:
+                    pass
+
             if category == "1":
-                themes = await google_api.get_themes(chapters[f"{chapter}"])
+                themes = await google_api.get_themes(chapter)
                 markup = await topics_menu.choose_theme(chapter, themes)
                 try:
                     await call.message.edit_text(f'Темы раздела {chapter}')
@@ -133,8 +145,8 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     pass
 
             elif category == "2":
+                info = await google_api.get_checkpoint(chapter)
                 markup = await topics_menu.checkpoint_info(chapter)
-                info = await google_api.get_checkpoint(chapters[f"{chapter}"])
                 try:
                     await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
                     await call.message.edit_reply_markup(markup)
@@ -145,6 +157,18 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                 raise Exception("Не знаю такой категории")
 
         case "3":
+
+            is_active = await google_api.is_chapter_active(chapter)
+            print(f"Level 3, Chapter: {chapter}, is active :{is_active}")
+            if not is_active:
+                try:
+                    await call.message.edit_text(f'В данный момент нельзя взаимодействовать с {chapter}')
+                    markup = await topics_menu.back_keyboard(chapter, theme, category, level=1)
+                    await call.message.edit_reply_markup(markup)
+                    return
+                except MessageNotModified:
+                    pass
+
             if category == "1":
                 markup = await topics_menu.theme_info(chapter, theme)
                 try:
@@ -167,7 +191,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                         data["chapter"] = chapter
                         await FSMSetDoc.new_value.set()
                 else:
-                    info = await google_api.get_checkpoint(chapters[f"{chapter}"])
+                    info = await google_api.get_checkpoint(chapter)
                     markup = await topics_menu.back_keyboard(chapter, theme, category, 3)
                     try:
                         await call.message.edit_text(f'{info[-1]}')
@@ -179,7 +203,19 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                 raise Exception("Не знаю такой категории")
 
         case "4":
-            info = await google_api.get_theme_info(chapters[f"{chapter}"], theme)
+
+            is_active = await google_api.is_chapter_active(chapter)
+            print(f"Level 4, Chapter: {chapter}, is active :{is_active}")
+            if not is_active:
+                try:
+                    await call.message.edit_text(f'В данный момент нельзя взаимодействовать с {chapter}')
+                    markup = await topics_menu.back_keyboard(chapter, theme, category, level=1)
+                    await call.message.edit_reply_markup(markup)
+                    return
+                except MessageNotModified:
+                    pass
+
+            info = await google_api.get_theme_info(chapter, theme)
             markup = await topics_menu.back_keyboard(chapter, theme, category, 4)
             try:
                 print(info, "-", choose)
