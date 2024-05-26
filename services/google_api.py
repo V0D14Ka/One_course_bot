@@ -82,8 +82,8 @@ class GoogleAPI:
                                              range=f"{chapter}!I2:N2")
             )
             values = res.get('values', [])
-            print("get_checkpoint- ", values[0])
-            return values[0]
+            print("get_checkpoint- ", values)
+            return values
 
     async def get_knowledge(self, chapter):
         async with self.aiogoogle as g:
