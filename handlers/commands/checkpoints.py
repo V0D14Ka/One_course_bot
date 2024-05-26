@@ -16,7 +16,7 @@ async def checkpoints(message: Union[types.CallbackQuery, types.Message]):
 
     if isinstance(message, types.CallbackQuery):
         call = message
-        await call.message.edit_text("Выберите пункт")
+        await call.message.edit_text("Выберите раздел курса, КТ которого Вас интересует")
         await call.message.edit_reply_markup(markup)
 
     if isinstance(message, types.Message):
