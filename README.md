@@ -15,14 +15,15 @@ git clone https://github.com/V0D14Ka/One_course_bot.git
 cd One_course_bot
 touch \.env
 ```
-Поместите в файл .env:
-  - TOKEN
-  - SAMPLE_SPREADSHEET_ID
-  - KNOWLEDGE_SPREADSHEET_ID
-  - FAQ_SPREADSHEET_ID
-  - GROUP_SPREADSHEET_ID
-  - CALENDAR_ID
-  - CHECKPOINTS_FOLDER
+Поместите в файл .env, пример .env-example:
+  - TOKEN - Токен телеграмм бота.
+  - TOPICS_SPREADSHEET_ID - id гугл таблицы "Разделы".
+  - KNOWLEDGE_SPREADSHEET_ID - id гугл таблицы "База знаний".
+  - FAQ_SPREADSHEET_ID - id гугл таблицы "FAQ".
+  - GROUP_SPREADSHEET_ID - id гугл таблицы "Группы.
+  - CALENDAR_ID - id гугл календаря с расписанием.
+  - CHECKPOINTS_FOLDER - id гугл папки для загрузки ДЗ в КТ "Контрольные точки".
+  - DB_URL - База данных для Tortoise ORM.
 
 Затем поместите в корневую папку проекта json файл service_account_credentials.
 
