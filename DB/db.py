@@ -1,16 +1,12 @@
 import tortoise
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
-async def db_init():
+async def db_init(db_url):
     # Here we connect to DB.
     # also specify the app name of "models"
     # which contain models from "DB.models"
     await tortoise.Tortoise.init(
-        db_url=os.getenv("DB_URL"),
+        db_url=db_url,
         modules={'models': ['DB.models']}
     )
     # # Generate the schema

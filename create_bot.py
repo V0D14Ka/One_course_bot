@@ -12,6 +12,8 @@ from keyboards import (InlineMenu, ScheduleMenu, KnowledgeMenu, TopicsMenu, DayT
 
 load_dotenv()
 
+db_url = os.getenv("DB_URL")
+
 inline_menu = InlineMenu()
 schedule_menu = ScheduleMenu()
 knowledge_menu = KnowledgeMenu()
