@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 from googleapiclient.http import MediaIoBaseUpload
 
 from DB.models import Users, Teams
-from create_bot import topics_menu, google_api, bot
+from create_bot import topics_menu, bot
+from services.google_api import GoogleAPI
 from static import messages
 from utils import check_access, check_cancel_update
 
@@ -24,7 +25,7 @@ class FSMSetDoc(StatesGroup):
 
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
-    chapters_arr = await google_api.get_topics()
+    chapters_arr = await GoogleAPI().get_topics()
     markup = await topics_menu.menu_keyboard(chapters_arr)
 
     if isinstance(message, types.CallbackQuery):
@@ -66,7 +67,7 @@ async def doc_set(message: types.Message, state: FSMContext, **kwargs):
                 response = requests.get(file_url, stream=True)
 
                 folder_id = os.getenv("CHECKPOINTS_FOLDER")
-                response = await google_api.upload(io.BytesIO(response.content).getvalue(), username, folder_id,
+                response = await GoogleAPI().upload(io.BytesIO(response.content).getvalue(), username, folder_id,
                                                    chapter)
                 if response != "error":
                     await call.message.edit_text("Файл успешно сохранен!✅")
@@ -92,7 +93,7 @@ async def doc_set_text(message: types.Message, state: FSMContext, **kwargs):
         if message.text.lower() == 'отмена':
             markup = await topics_menu.checkpoint_info(chapter)
             try:
-                info = await google_api.get_checkpoint(chapter)
+                info = await GoogleAPI().get_checkpoint(chapter)
                 await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
                 await call.message.edit_reply_markup(markup)
             except MessageNotModified:
@@ -137,8 +138,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                 pass
 
         case "2":
-
-            is_active = await google_api.is_chapter_active(chapter)
+            is_active = await GoogleAPI().is_chapter_active(chapter)
             print(f"Level 2, Chapter: {chapter}, is active :{is_active}")
             if not is_active:
                 try:
@@ -150,7 +150,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     pass
 
             if category == "1":
-                themes = await google_api.get_themes(chapter)
+                themes = await GoogleAPI().get_themes(chapter)
                 markup = await topics_menu.choose_theme(chapter, themes)
                 try:
                     await call.message.edit_text(f'Темы раздела {chapter}')
@@ -164,7 +164,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                 else:
                     is_lead = False
 
-                info = await google_api.get_checkpoint(chapter)
+                info = await GoogleAPI().get_checkpoint(chapter)
                 markup = await topics_menu.checkpoint_info(chapter, is_lead)
                 try:
                     info = info[0]
@@ -182,7 +182,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
         case "3":
 
-            is_active = await google_api.is_chapter_active(chapter)
+            is_active = await GoogleAPI().is_chapter_active(chapter)
             print(f"Level 3, Chapter: {chapter}, is active :{is_active}")
             if not is_active:
                 try:
@@ -215,7 +215,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                         data["chapter"] = chapter
                         await FSMSetDoc.new_value.set()
                 else:
-                    info = await google_api.get_checkpoint(chapter)
+                    info = await GoogleAPI().get_checkpoint(chapter)
                     markup = await topics_menu.back_keyboard(chapter, theme, category, 3)
                     try:
                         await call.message.edit_text(f'{info[-1]}')
@@ -228,7 +228,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
         case "4":
 
-            is_active = await google_api.is_chapter_active(chapter)
+            is_active = await GoogleAPI().is_chapter_active(chapter)
             print(f"Level 4, Chapter: {chapter}, is active :{is_active}")
             if not is_active:
                 try:
@@ -239,7 +239,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                 except MessageNotModified:
                     pass
 
-            info = await google_api.get_theme_info(chapter, theme)
+            info = await GoogleAPI().get_theme_info(chapter, theme)
             markup = await topics_menu.back_keyboard(chapter, theme, category, 4)
             try:
                 print(info, "-", choose)

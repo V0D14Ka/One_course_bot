@@ -5,7 +5,8 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 from aiogram.dispatcher import FSMContext
 
-from create_bot import knowledge_menu, google_api
+from create_bot import knowledge_menu
+from services.google_api import GoogleAPI
 from static.dictionaries import methods
 from static.messages import make_method_info
 from utils import check_access
@@ -44,7 +45,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
             await knowledge(call)
 
         case "1":
-            info = await google_api.get_knowledge(methods[f"{category}"])
+            info = await GoogleAPI().get_knowledge(methods[f"{category}"])
 
             markup = await knowledge_menu.choose_method(category, info)
             try:
@@ -54,7 +55,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                 pass
 
         case "2":
-            info = await google_api.get_method_info(methods[f"{category}"], method_id)
+            info = await GoogleAPI().get_method_info(methods[f"{category}"], method_id)
             formatted_string = await make_method_info(info)
             markup = await knowledge_menu.back_keyboard(category)
             try:

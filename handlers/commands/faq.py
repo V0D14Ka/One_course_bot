@@ -6,7 +6,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 
-from create_bot import faq_menu, google_api
+from create_bot import faq_menu
+from services.google_api import GoogleAPI
 from static.messages import make_method_info, format_array_to_string
 from utils import check_access
 
@@ -14,7 +15,7 @@ load_dotenv()
 
 
 async def faq(message: Union[types.CallbackQuery, types.Message]):
-    info = await google_api.get_faq()
+    info = await GoogleAPI().get_faq()
     answer = await format_array_to_string(info)
     markup = InlineKeyboardMarkup()
     teacher_id = os.getenv("teacher_id")

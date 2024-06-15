@@ -3,13 +3,14 @@ from typing import Union
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 
-from create_bot import day_task_menu, google_api
+from create_bot import day_task_menu
+from services.google_api import GoogleAPI
 from utils import check_access
 
 
 async def day_task(message: Union[types.CallbackQuery, types.Message]):
     markup = await day_task_menu.menu_keyboard()
-    task = await google_api.get_day_task()
+    task = await GoogleAPI().get_day_task()
     if isinstance(message, types.CallbackQuery):
         call = message
         await call.message.edit_text(task)

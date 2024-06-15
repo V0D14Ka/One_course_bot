@@ -8,7 +8,8 @@ from aiogram.dispatcher import FSMContext
 from tortoise.exceptions import NoValuesFetched
 
 from DB.models import Users
-from create_bot import bot, personal_menu, validation, google_api
+from create_bot import bot, personal_menu, validation
+from services.google_api import GoogleAPI
 from static import messages
 from utils import check_access, capitalize_name
 from utils import check_blank_user_info, check_validate, check_cancel_update
@@ -107,7 +108,7 @@ async def fullname_set(message: types.Message, state: FSMContext, **kwargs):
         full_name = new_value
         form = data["form"]
 
-        status, tg = await google_api.check_user(group, full_name)
+        status, tg = await GoogleAPI().check_user(group, full_name)
         match status:
             case 400:
                 if str(message.from_user.id) != tg:
@@ -120,7 +121,7 @@ async def fullname_set(message: types.Message, state: FSMContext, **kwargs):
                     return
 
             case 200:
-                await google_api.set_id(message.from_user.id, tg, group)
+                await GoogleAPI().set_id(message.from_user.id, tg, group)
             case 404:
                 await personal(call, error="Студент с данным именем, в данной группе не найден. Проверьте данные и повторите попытку")
                 try:
