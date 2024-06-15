@@ -1,1 +1,1 @@
-from handlers.commands import *
+from handlers.handlers_reg import register_handlers

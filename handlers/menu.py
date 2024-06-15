@@ -6,8 +6,8 @@ from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversat
     MessageNotModified
 
 from DB.models import Users
-from create_bot import bot, inline_menu
 from handlers.commands import *
+from keyboards import InlineMenu
 from static import messages
 from utils import check_access
 
@@ -19,7 +19,7 @@ async def list_categories(message: Union[types.CallbackQuery, types.Message], **
     if await check_access(message) is False:
         return
 
-    markup = await inline_menu.menu_keyboard()
+    markup = await InlineMenu().menu.menu_keyboard()
 
     if isinstance(message, types.CallbackQuery):
         call = message
@@ -60,4 +60,4 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
 def register_handlers_menu(_dp: Dispatcher):
     _dp.register_message_handler(list_categories, commands=['menu'])
-    _dp.register_callback_query_handler(menu_navigate, inline_menu.menu_cd.filter(), state=None)
+    _dp.register_callback_query_handler(menu_navigate, InlineMenu().menu.menu_cd.filter(), state=None)

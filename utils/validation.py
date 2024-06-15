@@ -2,7 +2,13 @@ import datetime
 import re
 
 
-class Validation:
+class Validation(object):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Validation, cls).__new__(cls)
+        return cls._instance
     """
         Валидация на регулярных выражениях.
     """

@@ -8,10 +8,10 @@ from aiogram.dispatcher import FSMContext
 from tortoise.exceptions import NoValuesFetched
 
 from DB.models import Users
-from create_bot import bot, personal_menu, validation
+from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from static import messages
-from utils import check_access, capitalize_name
+from utils import check_access, capitalize_name, Validation
 from utils import check_blank_user_info, check_validate, check_cancel_update
 
 
@@ -47,7 +47,7 @@ async def group_set(message: types.Message, state: FSMContext, **kwargs):
             return
 
         # Обработка ошибки валидации
-        code = await validation.val_mix(new_value)
+        code = await Validation().val_mix(new_value)
 
         if code != 200:
             await check_validate(call, message, code, "'Б9121'")
@@ -73,7 +73,7 @@ async def form_set(message: types.Message, state: FSMContext, **kwargs):
             return
 
         # Обработка ошибки валидации
-        code = await validation.val_digit(new_value)
+        code = await Validation().val_digit(new_value)
 
         if code != 200:
             await check_validate(call, message, code, "'2'")
@@ -97,7 +97,7 @@ async def fullname_set(message: types.Message, state: FSMContext, **kwargs):
             return
 
         # Обработка ошибки валидации
-        code = await validation.val_fio(new_value)
+        code = await Validation().val_fio(new_value)
 
         if code != 200:
             await check_validate(call, message, code, "'Иванов Иван Иванович'")
@@ -220,7 +220,7 @@ async def personal(message: Union[types.CallbackQuery, types.Message], changed=F
     if changed:
         mesg = "Обновление прошло успешно\n" + mesg
 
-    markup = await personal_menu.menu_keyboard(flag)
+    markup = await InlineMenu().personal_menu.menu_keyboard(flag)
 
     if isinstance(message, types.CallbackQuery):
         try:
@@ -259,7 +259,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     await FSMUpdateUserInfo.study_group.set()
             else:
                 try:
-                    markup = await personal_menu.to_change_keyboard()
+                    markup = await InlineMenu().personal_menu.to_change_keyboard()
                     await call.message.edit_text("Что вы хотите изменить?")
                     await call.message.edit_reply_markup(markup)
                 except:
@@ -282,4 +282,4 @@ def register_personal_handlers(_dp: Dispatcher):
     _dp.register_message_handler(form_set, state=FSMUpdateUserInfo.form)
     _dp.register_message_handler(group_set, state=FSMUpdateUserInfo.study_group)
     # _dp.register_message_handler(on_update_user, state=FSMUpdateUserValue.new_value)
-    _dp.register_callback_query_handler(menu_navigate, personal_menu.menu_cd.filter(), state=None)
+    _dp.register_callback_query_handler(menu_navigate, InlineMenu().personal_menu.menu_cd.filter(), state=None)

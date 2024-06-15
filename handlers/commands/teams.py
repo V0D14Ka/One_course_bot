@@ -8,11 +8,11 @@ from aiogram.dispatcher import FSMContext
 from aiogram.utils.markdown import hlink
 
 from DB.models import Users, Teams
-from create_bot import teams_menu, validation
+from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from static.dictionaries import methods
 from static.messages import make_method_info
-from utils import check_access, check_cancel_update, check_validate
+from utils import check_access, check_cancel_update, check_validate, Validation
 
 
 class FSMfindTeam(StatesGroup):
@@ -61,7 +61,7 @@ async def get_keyboard(user_id):
     user = await Users.get(id=user_id)
 
     if await user.team is None:
-        markup = await teams_menu.menu_keyboard(True)
+        markup = await InlineMenu().teams_menu.menu_keyboard(True)
         return "Вы не состоите в команде", markup
 
     else:
@@ -69,10 +69,10 @@ async def get_keyboard(user_id):
 
         if await Teams.exists(admin=user_id):
             if await Teams.get(admin=user_id) == team:
-                markup = await teams_menu.menu_keyboard(False, team.id)
+                markup = await InlineMenu().teams_menu.menu_keyboard(False, team.id)
                 return f"Вы в команде, код для вступления в команду - {user_id}", markup
 
-        markup = await teams_menu.menu_keyboard(False, team.id)
+        markup = await InlineMenu().teams_menu.menu_keyboard(False, team.id)
         return "Вы в команде", markup
 
 
@@ -110,7 +110,7 @@ async def find_team(message: types.Message, state: FSMContext, **kwargs):
             return
 
         # Обработка ошибки валидации
-        code = await validation.val_digit(new_value)
+        code = await Validation().val_digit(new_value)
 
         if code != 200:
             await check_validate(call, message, code, "'111111111'")
@@ -255,7 +255,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                 if method_id == "1":
                     # Смотрим участников
                     users = await Users.filter(team=team_id).values("id", "full_name", "study_group")
-                    markup = await teams_menu.back_keyboard(category=category, level=1)
+                    markup = await InlineMenu().teams_menu.back_keyboard(category=category, level=1)
                     if len(users) != 0:
                         ans = ""
                         i = 1
@@ -301,7 +301,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
 def register_teams_handlers(_dp: Dispatcher):
     _dp.register_message_handler(teams, commands=['teams'])
-    _dp.register_callback_query_handler(menu_navigate, teams_menu.menu_cd.filter(), state=None)
+    _dp.register_callback_query_handler(menu_navigate, InlineMenu().teams_menu.menu_cd.filter(), state=None)
     _dp.register_message_handler(find_team, state=FSMfindTeam.team_pass)
     _dp.register_message_handler(team_delete, state=FSMDeleteTeam.sure)
     _dp.register_message_handler(team_leave, state=FSMLeaveTeam.sure)

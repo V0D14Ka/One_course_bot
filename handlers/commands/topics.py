@@ -12,7 +12,8 @@ from dotenv import load_dotenv
 from googleapiclient.http import MediaIoBaseUpload
 
 from DB.models import Users, Teams
-from create_bot import topics_menu, bot
+from create_bot import bot
+from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from static import messages
 from utils import check_access, check_cancel_update
@@ -26,7 +27,7 @@ class FSMSetDoc(StatesGroup):
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
     chapters_arr = await GoogleAPI().get_topics()
-    markup = await topics_menu.menu_keyboard(chapters_arr)
+    markup = await InlineMenu().topics_menu.menu_keyboard(chapters_arr)
 
     if isinstance(message, types.CallbackQuery):
         call = message
@@ -91,7 +92,7 @@ async def doc_set_text(message: types.Message, state: FSMContext, **kwargs):
 
         # Обработка отмены
         if message.text.lower() == 'отмена':
-            markup = await topics_menu.checkpoint_info(chapter)
+            markup = await InlineMenu().topics_menu.checkpoint_info(chapter)
             try:
                 info = await GoogleAPI().get_checkpoint(chapter)
                 await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
@@ -130,7 +131,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
             await topics(call)
 
         case "1":
-            markup = await topics_menu.choose_category(chapter)
+            markup = await InlineMenu().topics_menu.choose_category(chapter)
             try:
                 await call.message.edit_text(f'Что вы хотите узнать в {chapter}?')
                 await call.message.edit_reply_markup(markup)
@@ -143,7 +144,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
             if not is_active:
                 try:
                     await call.message.edit_text(f'В данный момент нельзя взаимодействовать с {chapter}')
-                    markup = await topics_menu.back_keyboard(chapter, theme, category, level=1)
+                    markup = await InlineMenu().topics_menu.back_keyboard(chapter, theme, category, level=1)
                     await call.message.edit_reply_markup(markup)
                     return
                 except MessageNotModified:
@@ -151,7 +152,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
             if category == "1":
                 themes = await GoogleAPI().get_themes(chapter)
-                markup = await topics_menu.choose_theme(chapter, themes)
+                markup = await InlineMenu().topics_menu.choose_theme(chapter, themes)
                 try:
                     await call.message.edit_text(f'Темы раздела {chapter}')
                     await call.message.edit_reply_markup(markup)
@@ -165,7 +166,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                     is_lead = False
 
                 info = await GoogleAPI().get_checkpoint(chapter)
-                markup = await topics_menu.checkpoint_info(chapter, is_lead)
+                markup = await InlineMenu().topics_menu.checkpoint_info(chapter, is_lead)
                 try:
                     info = info[0]
                     await call.message.edit_text(messages.example_cp % (info[0], info[1], info[2], info[3], info[4]))
@@ -187,14 +188,14 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
             if not is_active:
                 try:
                     await call.message.edit_text(f'В данный момент нельзя взаимодействовать с {chapter}')
-                    markup = await topics_menu.back_keyboard(chapter, theme, category, level=1)
+                    markup = await InlineMenu().topics_menu.back_keyboard(chapter, theme, category, level=1)
                     await call.message.edit_reply_markup(markup)
                     return
                 except MessageNotModified:
                     pass
 
             if category == "1":
-                markup = await topics_menu.theme_info(chapter, theme)
+                markup = await InlineMenu().topics_menu.theme_info(chapter, theme)
                 try:
                     await call.message.edit_text(f'Выберите пункт темы:')
                     await call.message.edit_reply_markup(markup)
@@ -216,7 +217,7 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
                         await FSMSetDoc.new_value.set()
                 else:
                     info = await GoogleAPI().get_checkpoint(chapter)
-                    markup = await topics_menu.back_keyboard(chapter, theme, category, 3)
+                    markup = await InlineMenu().topics_menu.back_keyboard(chapter, theme, category, 3)
                     try:
                         await call.message.edit_text(f'{info[-1]}')
                         await call.message.edit_reply_markup(markup)
@@ -233,14 +234,14 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
             if not is_active:
                 try:
                     await call.message.edit_text(f'В данный момент нельзя взаимодействовать с {chapter}')
-                    markup = await topics_menu.back_keyboard(chapter, theme, category, level=1)
+                    markup = await InlineMenu().topics_menu.back_keyboard(chapter, theme, category, level=1)
                     await call.message.edit_reply_markup(markup)
                     return
                 except MessageNotModified:
                     pass
 
             info = await GoogleAPI().get_theme_info(chapter, theme)
-            markup = await topics_menu.back_keyboard(chapter, theme, category, 4)
+            markup = await InlineMenu().topics_menu.back_keyboard(chapter, theme, category, 4)
             try:
                 print(info, "-", choose)
                 await call.message.edit_text(f'{info[int(choose)]}')
@@ -253,4 +254,4 @@ def register_topics_handlers(_dp: Dispatcher):
     _dp.register_message_handler(topics, commands=['topics'])
     _dp.register_message_handler(doc_set, state=FSMSetDoc.new_value, content_types=['document'])
     _dp.register_message_handler(doc_set_text, state=FSMSetDoc.new_value)
-    _dp.register_callback_query_handler(menu_navigate, topics_menu.menu_cd.filter(), state=None)
+    _dp.register_callback_query_handler(menu_navigate, InlineMenu().topics_menu.menu_cd.filter(), state=None)

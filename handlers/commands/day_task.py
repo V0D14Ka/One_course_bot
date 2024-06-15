@@ -3,13 +3,13 @@ from typing import Union
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 
-from create_bot import day_task_menu
+from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from utils import check_access
 
 
 async def day_task(message: Union[types.CallbackQuery, types.Message]):
-    markup = await day_task_menu.menu_keyboard()
+    markup = await InlineMenu().day_task_menu.menu_keyboard()
     task = await GoogleAPI().get_day_task()
     if isinstance(message, types.CallbackQuery):
         call = message
@@ -38,4 +38,4 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
 def register_day_task_handlers(_dp: Dispatcher):
     _dp.register_message_handler(day_task, commands=['day_task'])
-    _dp.register_callback_query_handler(menu_navigate, day_task_menu.menu_cd.filter(), state=None)
+    _dp.register_callback_query_handler(menu_navigate, InlineMenu().day_task_menu.menu_cd.filter(), state=None)
