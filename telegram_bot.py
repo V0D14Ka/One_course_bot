@@ -1,8 +1,9 @@
-from DB.db import db_init
 from create_bot import dp, db_url
 from aiogram.utils import executor
+
+from DB import db_init
 from handlers import register_handlers
-from services.google_api import GoogleAPI
+from services import GoogleAPI
 
 
 async def on_startup(_):
