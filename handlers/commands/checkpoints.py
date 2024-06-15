@@ -11,18 +11,20 @@ from utils import check_access
 
 
 async def checkpoints(message: Union[types.CallbackQuery, types.Message]):
-    items = await GoogleAPI().get_topics()
-    markup = await InlineMenu().topics_menu.menu_cp_keyboard(items)
-
-    if isinstance(message, types.CallbackQuery):
-        call = message
-        await call.message.edit_text("Выберите раздел курса, КТ которого Вас интересует")
-        await call.message.edit_reply_markup(markup)
 
     if isinstance(message, types.Message):
         if await check_access(message) is False:
             return
+        items = await GoogleAPI().get_topics()
+        markup = await InlineMenu().topics_menu.menu_cp_keyboard(items)
         await message.answer("Выберите пункт", reply_markup=markup)
+
+    if isinstance(message, types.CallbackQuery):
+        call = message
+        items = await GoogleAPI().get_topics()
+        markup = await InlineMenu().topics_menu.menu_cp_keyboard(items)
+        await call.message.edit_text("Выберите раздел курса, КТ которого Вас интересует")
+        await call.message.edit_reply_markup(markup)
 
 
 def register_checkpoints_handlers(_dp: Dispatcher):

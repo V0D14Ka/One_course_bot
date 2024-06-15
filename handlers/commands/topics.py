@@ -26,18 +26,19 @@ class FSMSetDoc(StatesGroup):
 
 
 async def topics(message: Union[types.CallbackQuery, types.Message]):
-    chapters_arr = await GoogleAPI().get_topics()
-    markup = await InlineMenu().topics_menu.menu_keyboard(chapters_arr)
-
-    if isinstance(message, types.CallbackQuery):
-        call = message
-        await call.message.edit_text("Выберите раздел курса")
-        await call.message.edit_reply_markup(markup)
-
     if isinstance(message, types.Message):
         if await check_access(message) is False:
             return
+        chapters_arr = await GoogleAPI().get_topics()
+        markup = await InlineMenu().topics_menu.menu_keyboard(chapters_arr)
         await message.answer("Выберите раздел курса", reply_markup=markup)
+
+    if isinstance(message, types.CallbackQuery):
+        call = message
+        chapters_arr = await GoogleAPI().get_topics()
+        markup = await InlineMenu().topics_menu.menu_keyboard(chapters_arr)
+        await call.message.edit_text("Выберите раздел курса")
+        await call.message.edit_reply_markup(markup)
 
 
 async def doc_set(message: types.Message, state: FSMContext, **kwargs):

@@ -28,7 +28,19 @@ class FSMLeaveTeam(StatesGroup):
 
 
 async def teams(message: Union[types.CallbackQuery, types.Message]):
-    # markup = await teams_menu.menu_keyboard()
+
+    if isinstance(message, types.Message):
+        if await check_access(message) is False:
+            return
+
+        user = await Users.get(id=message.from_user.id)
+        if user.full_name is None or user.full_name == "":
+            await message.answer("Вначале заполните данные о себе - /personal")
+            return
+
+        mesg, markup = await get_keyboard(message.from_user.id)
+        await message.answer(mesg, reply_markup=markup)
+
     if isinstance(message, types.CallbackQuery):
         call = message
         try:
@@ -43,18 +55,6 @@ async def teams(message: Union[types.CallbackQuery, types.Message]):
             await call.message.edit_reply_markup(markup)
         except MessageNotModified:
             pass
-
-    if isinstance(message, types.Message):
-        if await check_access(message) is False:
-            return
-
-        user = await Users.get(id=message.from_user.id)
-        if user.full_name is None or user.full_name == "":
-            await message.answer("Вначале заполните данные о себе - /personal")
-            return
-
-        mesg, markup = await get_keyboard(message.from_user.id)
-        await message.answer(mesg, reply_markup=markup)
 
 
 async def get_keyboard(user_id):
