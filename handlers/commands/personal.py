@@ -11,6 +11,7 @@ from DB.models import Users
 from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from static import messages
+from static.messages import format_array_to_string
 from utils import check_access, capitalize_name, Validation
 from utils import check_blank_user_info, check_validate, check_cancel_update
 
@@ -37,9 +38,10 @@ async def group_set(message: types.Message, state: FSMContext, **kwargs):
         # Забираем необходимую информацию
         category = data["category"]
         call = data["call"]
+        group_arr = data["group_arr"]
         new_value = message.text
         # И кладем новую
-        data["group"] = new_value
+        data["group"] = new_value.upper()
 
         # Обработка отмены
         if message.text.lower() == 'отмена':
@@ -47,10 +49,14 @@ async def group_set(message: types.Message, state: FSMContext, **kwargs):
             return
 
         # Обработка ошибки валидации
-        code = await Validation().val_mix(new_value)
+        print(message.text, group_arr)
+        if message.text.upper() in group_arr:
+            code = 200
+        else:
+            code = "Данной группы нет"
 
         if code != 200:
-            await check_validate(call, message, code, "'Б9121'")
+            await check_validate(call, message, code, format_array_to_string(group_arr))
             return
 
         await message.delete()
@@ -251,11 +257,15 @@ async def menu_navigate(call: types.CallbackQuery, state: FSMContext, callback_d
 
         case "1":
             if category == "2":
-                await call.message.edit_text(messages.ask_for_update_user_info % ("1", "Номер группы", "'Б9121'"))
                 async with state.proxy() as data:
                     # Передаем необходимую информацию
                     data["category"] = category
                     data["call"] = call
+                    group_arr = await GoogleAPI().get_groups()
+                    data["group_arr"] = group_arr
+                    group_arr = format_array_to_string(group_arr)
+                    await call.message.edit_text(messages.ask_for_update_user_group % ("1", "Номер группы", f"{group_arr}"))
+
                     await FSMUpdateUserInfo.study_group.set()
             else:
                 try:

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from keyboards import InlineMenu
 from services.google_api import GoogleAPI
-from static.messages import make_method_info, format_array_to_string
+from static.messages import make_method_info, format_faq_array_to_string
 from utils import check_access
 
 load_dotenv()
@@ -19,7 +19,7 @@ async def faq(message: Union[types.CallbackQuery, types.Message]):
         if await check_access(message) is False:
             return
         info = await GoogleAPI().get_faq()
-        answer = await format_array_to_string(info)
+        answer = format_faq_array_to_string(info)
         markup = InlineKeyboardMarkup()
         teacher_id = os.getenv("teacher_id")
         markup.row(
@@ -30,7 +30,7 @@ async def faq(message: Union[types.CallbackQuery, types.Message]):
     if isinstance(message, types.CallbackQuery):
         call = message
         info = await GoogleAPI().get_faq()
-        answer = await format_array_to_string(info)
+        answer = format_faq_array_to_string(info)
         markup = InlineKeyboardMarkup()
         teacher_id = os.getenv("teacher_id")
         markup.row(
