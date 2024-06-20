@@ -2,13 +2,9 @@ from typing import Union
 
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized, \
-    MessageNotModified
 
-from DB.models import Users
 from handlers.commands import *
 from keyboards import InlineMenu
-from static import messages
 from utils import check_access
 
 

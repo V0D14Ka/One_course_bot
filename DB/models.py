@@ -1,7 +1,6 @@
+from tortoise import fields
 from tortoise.fields import SET_NULL
 from tortoise.models import Model
-from tortoise import fields
-from tortoise.validators import MaxLengthValidator
 
 
 class Users(Model):

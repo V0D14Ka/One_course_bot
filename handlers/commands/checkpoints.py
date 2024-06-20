@@ -1,9 +1,6 @@
 from typing import Union
 
 from aiogram import types, Dispatcher
-from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized, \
-    MessageNotModified
-from aiogram.dispatcher import FSMContext
 
 from keyboards import InlineMenu
 from services.google_api import GoogleAPI

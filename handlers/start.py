@@ -1,7 +1,5 @@
 from aiogram import types, Dispatcher
-from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized
-from aiogram.dispatcher import FSMContext
 
 from DB.models import Users
 from create_bot import bot

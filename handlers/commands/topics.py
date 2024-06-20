@@ -4,19 +4,17 @@ from typing import Union
 
 import requests
 from aiogram import types, Dispatcher
-from aiogram.dispatcher.filters.state import StatesGroup, State
-from aiogram.utils.exceptions import MessageCantBeDeleted, CantInitiateConversation, BotBlocked, Unauthorized, \
-    MessageNotModified
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.utils.exceptions import MessageNotModified
 from dotenv import load_dotenv
-from googleapiclient.http import MediaIoBaseUpload
 
 from DB.models import Users, Teams
 from create_bot import bot
 from keyboards import InlineMenu
 from services.google_api import GoogleAPI
 from static import messages
-from utils import check_access, check_cancel_update
+from utils import check_access
 
 load_dotenv()
 
