@@ -3,7 +3,8 @@
 # Bot User-Flow
 
 ```mermaid
-/menu --> /topics;
+flowchart TD
+    /menu --> /topics;
     /menu --> /checkpoints;
     /menu --> /info;
     /menu --> /schedule;
