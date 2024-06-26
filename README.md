@@ -1,7 +1,7 @@
 # One_course_bot
 
 # Bot User-Flow
-
+Синим отмечены места, где происходит взаимодействие с Google API.
 ```mermaid
 flowchart TD
     /menu --> /topics;
