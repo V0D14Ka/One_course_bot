@@ -1,5 +1,18 @@
 # One_course_bot
 
+# Архитектура
+
+```mermaid
+flowchart TB;
+    /start --> /topics;
+    /start --> /checkpoints;
+    /start --> /info;
+    /start --> /schedule;
+    /start --> /FAQ;
+    /start --> /knowledge;
+    /start --> /personal;
+    /start --> /team;
+```
 
 ## Содержание
 
